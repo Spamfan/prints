@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimizer (beta)</title>
+    
+    <!-- PDF.js and jsPDF library CDNs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #version-text {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.8em;
+            color: #606770;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #app-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1c1e21;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        #upload-area {
+            border: 2px dashed #dddfe2;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        
+        #upload-area.dragover {
+            border-color: #1877f2;
+            background-color: #f0f8ff;
+        }
+        
+        #upload-area p { margin: 0; font-weight: 600; color: #606770; }
+        #upload-input { display: none; }
+
+        .status-section {
+            display: none;
+            padding: 10px;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        
+        .status-text { font-weight: 600; }
+        .status-filename { font-weight: normal; font-style: italic; color: #606770; margin-left: 8px; }
+        
+        .control-section { text-align: left; margin-bottom: 15px; }
+        .control-section label { display: block; margin-bottom: 8px; font-weight: 600; color: #606770; }
+        
+        .toggles-wrapper {
+            display: flex;
+            align-items: flex-start; 
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .toggle-option { display: flex; align-items: center; }
+        .toggle-option label { margin: 0 0 0 8px; font-weight: normal; }
+        
+        /* EDLP Toggle Styles */
+        #edlp-toggle-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+        }
+        #edlp-warning { 
+            visibility: hidden; 
+            font-size: 0.7em; 
+            color: #d93025; 
+            margin-top: 2px; 
+            width: 100%; 
+            text-align: left; 
+            padding-left: 22px; 
+            min-height: 1.2em; 
+        }
+        #edlp-warning.visible {
+            visibility: visible;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #highlight-btn, #process-btn, #copy-log-btn {
+            flex-grow: 1;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        #highlight-btn, #copy-log-btn { background-color: #e4e6eb; color: #050505; }
+        #process-btn { background-color: #1877f2; color: white; }
+        
+        #comments {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        #konami-message {
+            display: none;
+            text-align: center;
+            font-style: italic;
+            color: #606770;
+            margin-top: 5px;
+        }
+
+        #how-to-use-container {
+            text-align: left;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #e4e6eb;
+        }
+
+        #how-to-use-container h3, #how-to-use-container h4 { margin: 15px 0 10px 0; color: #606770; font-size: 1em; }
+        #how-to-use-container ol, #how-to-use-container ul { padding-left: 20px; margin: 0; font-size: 0.9em; color: #606770; line-height: 1.6; }
+        #how-to-use-container ul { margin-top: 5px; }
+        .inline-svg { width: 1em; height: 1em; vertical-align: middle; margin: 0 2px; }
+
+        #dev-console-container {
+            display: none;
+            text-align: left;
+            margin-top: 20px;
+        }
+        #dev-console-output {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        /* Modal Styles */
+        .modal-container { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fefefe; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); width: 80%; max-width: 600px; max-height: 90%; display: flex; flex-direction: column; }
+        .modal-header { padding: 10px 20px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; font-size: 1.2em; }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        #dev-mode-text { text-align: center; padding: 40px 20px; }
+        #dev-mode-text p { margin: 5px 0; }
+        .emphasis-header { display: flex; align-items: center; font-weight: bold; font-size: 0.8em; color: #606770; background-color: #f0f2f5; padding: 10px 20px; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 10; }
+        .emphasis-header-hide, .emphasis-header-partial, .emphasis-header-full, .emphasis-header-unhide { min-width: 40px; text-align: center; }
+        .emphasis-header-unhide { cursor: pointer; }
+        .emphasis-header-text { flex-grow: 1; padding-left: 5px; }
+        .modal-body { flex-grow: 1; padding: 0; overflow-y: auto; }
+        #emphasis-list-container { padding: 5px 20px; }
+        #pdf-preview-iframe { width: 100%; height: 100%; border: none; }
+        .emphasis-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #e9ebee; }
+        .emphasis-item-hide { min-width: 40px; text-align: center; }
+        .emphasis-item .hide-icon { width: 18px; height: 18px; cursor: pointer; fill: #606770; }
+        .emphasis-item.item-hidden .hide-icon { fill: #ccc; }
+        .emphasis-item input[type="checkbox"] { min-width: 40px; height: 18px; margin: 0; }
+        .emphasis-item-text { font-size: 0.9em; padding-left: 5px; transition: color 0.2s; }
+        .emphasis-item.item-hidden .emphasis-item-text { color: #ccc; text-decoration: line-through; }
+        .emphasis-list-carrier-header { font-weight: bold; font-size: 1.1em; margin-top: 15px; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 2px solid #050505; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #ddd; text-align: right; }
+        #download-btn { display: none; }
+        .modal-footer button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="version-text">Beta Version 21</div>
+
+    <div id="app-container">
+        <h1>Optimizer</h1>
+        
+        <div id="upload-area">
+            <input type="file" id="upload-input" multiple accept=".pdf">
+            <p>Drag & drop files here.</p>
+        </div>
+
+        <div id="status-container">
+            <div class="status-section" id="att-status"><div><span class="status-text">AT&T:</span><span class="status-filename"></span></div></div>
+            <div class="status-section" id="vzw-status"><div><span class="status-text">Verizon:</span><span class="status-filename"></span></div></div>
+            <div class="status-section" id="tmo-status"><div><span class="status-text">T-Mobile:</span><span class="status-filename"></span></div></div>
+        </div>
+
+        <div class="toggles-wrapper">
+            <div class="toggle-option">
+                <input type="checkbox" id="isolate-iphones">
+                <label for="isolate-iphones">Isolate iPhones</label>
+            </div>
+            <div class="toggle-option" id="edlp-toggle-wrapper">
+                <div style="display: flex; align-items: center;">
+                    <input type="checkbox" id="show-edlps-toggle">
+                    <label for="show-edlps-toggle">Show Likely EDLPs (experimental)</label>
+                </div>
+            </div>
+            <div class="toggle-option">
+                <input type="checkbox" id="dev-console-toggle">
+                <label for="dev-console-toggle">Other experimental settings</label>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="highlight-btn">Customize</button>
+            <button id="process-btn">Preview or Print</button>
+        </div>
+
+        <div class="control-section">
+            <label for="comments">Comments (optional)</label>
+            <textarea id="comments"></textarea>
+            <p id="konami-message">Also try Tank Tycoon!</p>
+        </div>
+
+        <div id="how-to-use-container"></div>
+
+        <div id="dev-console-container">
+            <pre id="dev-console-output"></pre>
+            <button id="copy-log-btn">Copy Log</button>
+        </div>
+    </div>
+
+    <!-- Modals are empty here, populated by script -->
+    <div id="preview-modal" class="modal-container"></div>
+    <div id="emphasis-modal" class="modal-container"></div>
+    <div id="dev-mode-modal" class="modal-container"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- SCRIPT INITIALIZATION ---
+        const APP_VERSION = 'Beta Version 21';
+        document.getElementById('version-text').textContent = APP_VERSION;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
+        // Standard SVG
+        const HIDE_ICON_SVG = `<svg class="hide-icon inline-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/><line x1="2" y1="2" x2="22" y2="22" stroke="#606770" stroke-width="2"/></svg>`;
+        const SHOW_ICON_SVG = `<svg class="hide-icon inline-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+        const MORE_OPTIONS_SVG = `<svg class="inline-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#606770"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
+        
+        document.getElementById('how-to-use-container').innerHTML = `
+            <h3><strong>Heads up! This software is still in development and can make mistakes.</strong></h3>
+            <h4><strong>HOW TO USE</strong></h4>
+            <ol>
+                <li><strong>Save Each Carrier's Inventory as a PDF</strong>
+                    <ul>
+                        <li>CRITICAL: You must open WARP in a new, separate window (Ctrl + N). The optimizer will not accept file inputs if WARP is only in a separate tab.</li>
+                        <li>In the new WARP window, navigate to: Inventory Management > View Available Inventory.</li>
+                        <li>Select AT&T, make sure the "Instock" box is checked, then click More Options (${MORE_OPTIONS_SVG}) and choose Print.</li>
+                        <li>Change the "Destination" printer from "CPR1" to Save as PDF.
+                            <ul><li>Note: For best results, use the original formatting (100% scale and default margins), as this has passed user testing.</li></ul>
+                        </li>
+                        <li>Name the file exactly "ATT.pdf". If a file with that name already exists, you must overwrite it.</li>
+                        <li>Repeat this exact process for Verizon, naming the file "VZW.pdf".</li>
+                        <li>Repeat one last time for T-Mobile, naming the file "TMO.pdf".</li>
+                        <li>To get the File Explorer ready for the next step, start to save the "TMO.pdf" file a second time, but don't actually save it. Just leave the File Explorer window open.</li>
+                    </ul>
+                </li>
+                <li><strong>Drag and Drop Files into the Optimizer</strong>
+                    <ul>
+                        <li>With the File Explorer window still open from the last step, locate the three PDF files you just created (ATT.pdf, VZW.pdf, TMO.pdf).</li>
+                        <li>Individually, click and hold each file and drag it directly into the optimizer window.
+                            <ul><li>Tip: While holding the file, you can use Alt + Tab or hover above the Chrome icon in your taskbar to switch from the File Explorer to the optimizer window to drop the file.</li></ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Optional: Customize Your List</strong>
+                    <ul>
+                        <li>Partial Highlight (left checkbox): Highlights only the phone's name. (Recommended for good deals).</li>
+                        <li>Full Highlight (right checkbox): Highlights the entire row for that device. (Recommended for extra good deals).</li>
+                        <li>Hide (${HIDE_ICON_SVG} toggle): Use this to hide unwanted listings, such as demo-only or unlocked devices.</li>
+                        <li>Master Checkboxes: Use the main checkboxes at the top of the list to toggle partial or full highlights for the entire window at once.</li>
+                        <li>Click Done to save your customizations. Your highlight preferences are saved within the app, so you can adjust them anytime.</li>
+                    </ul>
+                </li>
+                <li><strong>Print the Combined PDF</strong>
+                    <ul>
+                        <li>Click the blue "Preview or Print" button.</li>
+                        <li>A preview pane showing the combined PDF will appear. Right-click anywhere on the PDF preview and choose Print.</li>
+                        <li>Important: Be sure to re-select your store's printer (e.g., "CPR1") as the destination so you print the combined file instead of saving it as a PDF again.</li>
+                    </ul>
+                </li>
+            </ol>
+        `;
+
+        // --- GLOBAL STATE ---
+        let appState = { 
+            att: { consolidatedList: [], emphasis: new Map(), fileDate: '', storeNumber: '', autoHidden: [] }, 
+            vzw: { consolidatedList: [], emphasis: new Map(), fileDate: '', storeNumber: '', autoHidden: [] }, 
+            tmo: { consolidatedList: [], emphasis: new Map(), fileDate: '', storeNumber: '', autoHidden: [] } 
+        };
+        let devModalCloseable = { button: true, backdrop: true };
+
+        const STORE_NICKNAMES = { '1698': 'HKST', '2399': 'MANCH', '1762': 'SBRK' };
+
+        // --- EDLP DATA & ABBREVIATIONS ---
+        const DEVICE_ABBREVIATIONS = {
+            'Classic': 'Classic', 'Galaxy A03': 'A03', 'Galaxy A13 LTE': 'A13', 'Galaxy A15 5G': 'A15', 'Galaxy A16 5G': 'A16', 'Galaxy A35 5G': 'A35', 'Galaxy S24 FE': '24FE', 'Galaxy S25 FE': '25FE', 'Galaxy S25 Plus 5G': 'S25+', 'Galaxy S25 Ultra 5G': 'S25U', 'Galaxy Z Flip 4 5G': 'GZF4',
+            'iPhone 15': 'IP15', 'iPhone 16 Pro Max': 'IP16PM', 'iPhone 16 Pro': 'IP16PR', 'iPhone 16 Plus': 'IP16+', 'iPhone 16e': 'IP16e', 'iPhone 16': 'IP16', 
+            'iPhone 17 Pro Max': 'IP17PM', 'iPhone 17 Pro': 'IP17PR', 'iPhone 17': 'IP17', 'iPhone Air': 'IP AIR',
+            'Moto G 5G 2024': 'MG24', 'Moto G 5G 2025': 'MG25', 'Moto G Power 2024': 'PWR24', 'Moto G Power 2025': 'PWR25', 'Moto G Stylus 2024': 'STYL24', 'Moto G Stylus 2025': 'STYL25', 'One Ace 5G': 'ACE', 'REVVL 6': 'REV6', 'TCL Flip 3': 'Flip3',
+            'Galaxy S24 Plus': 'S24+', 'Galaxy S23 Plus': 'S23+', 'Galaxy S22 Plus': 'S22+', 'Galaxy S21 Plus': 'S21+', 'Galaxy S20 Plus': 'S20+',
+            'Cingular Flip 4 4GB': 'Flip4 4GB', 'Galaxy A14 64GB': 'A14 64GB', 'Galaxy A23 64GB': 'A23 64GB', 'Galaxy A54 5G 128GB': 'A54 128GB', 'Moto G Play 2023 32GB': 'PLAY23 32GB'
+        };
+
+        const COLOR_ABBREVIATIONS = {
+            'Beige': 'BGE', 'Black': 'BLK', 'Black Titanium': 'BLK', 'Blue': 'BLU', 'Cosmic Orange': 'ORNG', 'Deep Blue': 'BLU', 'Desert Titanium': 'DSRT', 'Graphite': 'BLK', 'Gray': 'GRY', 'Green': 'GRN', 'Mist Blue': 'BLU', 'Natural Titanium': 'NTRL', 'Navy': 'BLU', 'Sky Blue': 'BLU', 'Space Black': 'BLK', 'Titanium Black': 'BLK', 'Ultramarine': 'BLU', 'White': 'WHTE'
+        };
+
+        const HIDDEN_CLEANUP = {
+            'Demo - iPhone 16 Ultramari ne Demo 128GB': 'Demo IP16',
+            'Demo - Galaxy A16 128GB': 'Demo A16',
+            'Moto G 5G 2024 unlocked 128GB': 'MG24 Unlocked',
+            'Demo - iPhone 16 Plus 128GB': 'Demo IP16+',
+            'Demo - iPhone 16 128GB': 'Demo IP16',
+            'Demo - Galaxy S24 FE 128GB': 'Demo S24FE',
+            'Demo - Galaxy A15 5G 128GB': 'Demo A15',
+            'Demo - Galaxy S25 Plus 256GB': 'Demo S25+',
+            'Demo - Galaxy S25 Ultra 256GB': 'Demo S25U',
+            'Demo - iPhone 16e 128GB': 'Demo IP16e',
+            'Demo - iPhone 17 DEMO 256GB': 'Demo IP17',
+            'Demo - iPhone 17 Pro Max DEMO 256GB': 'Demo IP17PM',
+            'Demo - iPhone Air DEMO 256GB': 'Demo IP Air',
+            'Galaxy A15 5G Unlocked 128GB': 'A15 Unlocked',
+            'Galaxy A35 unlocked 128GB': 'A35 Unlocked',
+            'Moto G Power 2024 unlocke d 128GB': 'PWR24 Unlocked',
+            'Moto G Stylus 2024 unlocke d 256GB': 'STYL24 Unlocked',
+            'Demo - iPhone 17 Pro DEMO 256GB': 'Demo IP17PR',
+            'Demo - iPhone 17 Plus DEMO 256GB': 'Demo IP17+',
+            'Demo - Galaxy S25 128GB': 'Demo S25',
+            'Moto G 5G 2025 unlocke d 128GB': 'MG25 Unlocked',
+            'Moto G Stylus 2025 unlocke d 256GB': 'STYL25 Unlocked'
+        };
+
+        // Snapshot Data (Generated Beta v16 with Timestamps)
+        const EDLP_DATA = {
+            att: {
+                'Classic': { total: 55, last_updated: 1764700686556 },
+                'Galaxy A11': { total: 36, last_updated: 1764449590527 },
+                'Galaxy A15 5G': { total: 36, last_updated: 1764700704335 },
+                'Galaxy A16 5G': { total: 119, last_updated: 1764701196650 },
+                'Galaxy A35 5G': { total: 99, last_updated: 1764448685541 },
+                'Galaxy S24 FE': { total: 580, last_updated: 1764700915613 },
+                'Galaxy S25 FE': { total: 612, last_updated: 1764700930321 },
+                'Galaxy S25 Plus 5G': { total: 799, last_updated: 1764700953069 },
+                'Galaxy S25 Ultra 5G': { total: 999, last_updated: 1764700790604 },
+                'iPhone 15': { total: 299, last_updated: 1765144676354 },
+                'iPhone 16': { total: 629, last_updated: 1765144696336 },
+                'iPhone 16 Plus': { total: 729, last_updated: 1765142386885 },
+                'iPhone 16 Pro': { total: 799, last_updated: 1765144735530 },
+                'iPhone 16 Pro Max': { total: 999, last_updated: 1765144749989 },
+                'iPhone 16e': { total: 549, last_updated: 1765142389531 },
+                'iPhone 17': { total: 779, last_updated: 1764701687148 },
+                'iPhone 17 Pro': { total: 1049, last_updated: 1764701705290 },
+                'iPhone 17 Pro Max': { total: 1149, last_updated: 1764701731301 },
+                'iPhone Air': { total: 899, last_updated: 1765144806232 },
+                'Moto G Stylus 2025': { total: 180, last_updated: 1765054861213 }
+            },
+            tmo: {
+                'Flip 4 5G': { dp: 20, mo: 1, total: 44, last_updated: 1764701132757 },
+                'Galaxy A13 LTE': { total: 49, last_updated: 1764701158435 },
+                'Galaxy A16 5G': { dp: 45, mo: 3, total: 117, last_updated: 1764701196650 },
+                'Galaxy Z Flip 4 5G': { dp: 20, mo: 1, total: 44, last_updated: 1764700989400 },
+                'iPhone 15': { dp: 227, mo: 3, total: 299, last_updated: 1765144676354 },
+                'iPhone 16': { total: 629, last_updated: 1765144696336 },
+                'iPhone 16 Plus': { dp: 549, mo: 7.5, total: 729, last_updated: 1765142386885 },
+                'iPhone 16 Pro': { dp: 601, mo: 8.25, total: 799, last_updated: 1765144735530 },
+                'iPhone 16 Pro Max': { mo: 41.63, total: 999, last_updated: 1765144749989 },
+                'iPhone 16e': { total: 549, last_updated: 1765142389531 },
+                'iPhone 17': { dp: 587, mo: 8, total: 779, last_updated: 1764701687148 },
+                'iPhone 17 Pro': { dp: 791, mo: 10.75, total: 1049, last_updated: 1764701705290 },
+                'iPhone 17 Pro Max': { dp: 867, mo: 11.75, total: 1149, last_updated: 1764701731301 },
+                'iPhone Air': { dp: 677, mo: 9.25, total: 899, last_updated: 1765144806232 },
+                'Moto G 5G 2025': { dp: 30, mo: 1, total: 54, last_updated: 1764701376302 },
+                'Moto G Power 2025': { dp: 40, mo: 2, total: 88, last_updated: 1764701374519 },
+                'Moto G Stylus 2025': { dp: 50, mo: 3.46, total: 133, last_updated: 1764701373157 },
+                'REVVL 6': { dp: 30, mo: 0.25, total: 36, last_updated: 1764701398907 }
+            },
+            vzw: {
+                'Galaxy A03': { total: 36, last_updated: 1764700839781 },
+                'Galaxy A11': { total: 36, last_updated: 1764449590527 },
+                'Galaxy A15 5G': { total: 36, last_updated: 1764700704335 },
+                'Galaxy A16 5G': { total: 120, last_updated: 1764701196650 },
+                'Galaxy S24 FE': { total: 649, last_updated: 1764700915613 },
+                'Galaxy S25 FE': { total: 650, last_updated: 1764700930321 },
+                'Galaxy S25 Plus 5G': { total: 999, last_updated: 1764700958907 },
+                'Galaxy S25 Ultra 5G': { total: 1149, last_updated: 1764630886489 },
+                'Galaxy Z Flip 4 5G': { total: 650, last_updated: 1764700989400 },
+                'iPhone 15': { total: 630, last_updated: 1765144676354 },
+                'iPhone 16': { total: 729, last_updated: 1765144696336 },
+                'iPhone 16 Plus': { total: 721, last_updated: 1765142386885 },
+                'iPhone 16 Pro': { total: 899, last_updated: 1765144735530 },
+                'iPhone 16 Pro Max': { total: 1099, last_updated: 1765144749989 },
+                'iPhone 16e': { total: 600, last_updated: 1765142389531 },
+                'iPhone 17': { total: 829, last_updated: 1764701687148 },
+                'iPhone 17 Pro': { total: 1099, last_updated: 1764701705290 },
+                'iPhone 17 Pro Max': { total: 1199, last_updated: 1764701741757 },
+                'iPhone Air': { total: 999, last_updated: 1765144806232 },
+                'Moto G 5G 2024': { total: 72, last_updated: 1764701008759 },
+                'Moto G 5G 2025': { total: 72, last_updated: 1764701376302 },
+                'Moto G Power 2025': { total: 108, last_updated: 1764701374519 },
+                'One Ace 5G': { total: 36, last_updated: 1764701048879 },
+                'TCL Flip 3': { total: 36, last_updated: 1764448685542 }
+            }
+        };
+
+        // --- LOCALSTORAGE FUNCTIONS ---
+        const saveSettings = () => {
+            try {
+                const cleanEmphasis = (emphasisMap) => {
+                    const cleanEntries = Array.from(emphasisMap.entries()).map(([key, value]) => {
+                        const { partial, full, hidden } = value; 
+                        return [key, { partial, full, hidden }];
+                    });
+                    return new Map(cleanEntries);
+                };
+
+                const settings = {
+                    isolate: isolateIphonesCheckbox.checked,
+                    emphasis: {
+                        att: Array.from(cleanEmphasis(appState.att.emphasis).entries()),
+                        vzw: Array.from(cleanEmphasis(appState.vzw.emphasis).entries()),
+                        tmo: Array.from(cleanEmphasis(appState.tmo.emphasis).entries())
+                    }
+                };
+                localStorage.setItem('betterInvSettings', JSON.stringify(settings));
+            } catch (error) { console.error("Could not save settings:", error); }
+        };
+
+        const loadSettings = () => {
+            try {
+                const savedSettings = localStorage.getItem('betterInvSettings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    isolateIphonesCheckbox.checked = settings.isolate || false;
+                    appState.att.emphasis = new Map(settings.emphasis.att || []);
+                    appState.vzw.emphasis = new Map(settings.emphasis.vzw || []);
+                    appState.tmo.emphasis = new Map(settings.emphasis.tmo || []);
+                }
+            } catch (error) { console.error("Could not load settings, using defaults:", error); }
+        };
+
+        // --- STATIC UI ELEMENT SELECTORS ---
+        const versionText = document.getElementById('version-text');
+        const uploadArea = document.getElementById('upload-area');
+        const uploadInput = document.getElementById('upload-input');
+        const isolateIphonesCheckbox = document.getElementById('isolate-iphones');
+        const highlightBtn = document.getElementById('highlight-btn');
+        const processBtn = document.getElementById('process-btn');
+        const commentsInput = document.getElementById('comments');
+        const konamiMessage = document.getElementById('konami-message');
+        const devConsoleToggle = document.getElementById('dev-console-toggle');
+        const devConsoleContainer = document.getElementById('dev-console-container');
+        const devConsoleOutput = document.getElementById('dev-console-output');
+        const copyLogBtn = document.getElementById('copy-log-btn');
+        const showEdlpsToggle = document.getElementById('show-edlps-toggle');
+        const edlpWarning = document.getElementById('edlp-warning');
+
+        // --- DYNAMIC HTML INJECTION ---
+        document.getElementById('preview-modal').innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header"><h2>PDF Preview</h2><span class="close-btn" id="preview-close-btn">&times;</span></div>
+                <div class="modal-body">
+                    <div style="text-align: left; margin-bottom: 10px; color: #333; padding-left: 20px;">
+                        <strong>To print:</strong>
+                        <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                            <li><strong>Right click preview pane</strong></li>
+                            <li><strong>Click print</strong></li>
+                            <li>Remember to change the destination printer back to CKPR1.</li>
+                        </ul>
+                    </div>
+                    <iframe id="pdf-preview-iframe" frameborder="0"></iframe>
+                </div>
+                <div class="modal-footer"><button id="download-btn">Download</button></div>
+            </div>`;
+        document.getElementById('emphasis-modal').innerHTML = `<div class="modal-content"><div class="modal-header"><h2 id="emphasis-modal-title">Highlight Inventory</h2><span class="close-btn" id="emphasis-close-btn">&times;</span></div><div class="modal-body"><div class="emphasis-header"><div class="emphasis-header-unhide" id="unhide-all-btn" title="Unhide All">${SHOW_ICON_SVG}</div><div class="emphasis-header-hide"></div><div class="emphasis-header-partial"><input type="checkbox" id="master-partial-checkbox" title="Select/Deselect All Partial"></div><div class="emphasis-header-full"><input type="checkbox" id="master-full-checkbox" title="Select/Deselect All Full"></div><div class="emphasis-header-text">(Highlight partial/full)</div></div><div id="emphasis-list-container"></div></div><div class="modal-footer"><button id="emphasis-done-btn">Done</button></div></div>`;
+        document.getElementById('dev-mode-modal').innerHTML = `<div class="modal-content"><div class="modal-header"><h2>Dev Mode</h2><span class="close-btn" id="dev-mode-close-btn">&times;</span></div><div class="modal-body"><div id="dev-mode-text"><p><strong>developer mode activated lol</strong></p><p>(this doesn't do anything)</p></div></div></div>`;
+        
+        // --- DYNAMIC UI ELEMENT SELECTORS ---
+        const previewModal = document.getElementById('preview-modal');
+        const emphasisModal = document.getElementById('emphasis-modal');
+        const devModeModal = document.getElementById('dev-mode-modal');
+        const iframe = document.getElementById('pdf-preview-iframe');
+        const previewCloseBtn = document.getElementById('preview-close-btn');
+        const emphasisCloseBtn = document.getElementById('emphasis-close-btn');
+        const emphasisDoneBtn = document.getElementById('emphasis-done-btn');
+        const devModeCloseBtn = document.getElementById('dev-mode-close-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const unhideAllBtn = document.getElementById('unhide-all-btn');
+
+        // --- CORE LOGIC & HELPER FUNCTIONS ---
+        const getTextFromPdf = (file) => { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = async (event) => { try { const pdf = await pdfjsLib.getDocument({ data: event.target.result }).promise; let textContent = ''; for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const text = await page.getTextContent(); textContent += text.items.map(s => s.str).join(' '); } resolve(textContent); } catch (error) { reject(error); } }; reader.onerror = (error) => reject(error); reader.readAsArrayBuffer(file); }); };
+        
+        const parseInventoryText = (text) => { 
+            if (!text) return { preFilterList: [], postFilterList: [] }; 
+            const dataStartIndex = text.indexOf('Quantity'); 
+            if (dataStartIndex === -1) return { preFilterList: [], postFilterList: [] }; 
+            const dataText = text.substring(dataStartIndex + 'Quantity'.length); 
+            const inventoryRegex = /(.+?)\s+(\d+\s?GB)\s+([a-zA-Z\s]+?)\s+(\d+\s+available)/g; 
+            const matches = [...dataText.matchAll(inventoryRegex)]; 
+            const preFilterList = []; 
+            const postFilterList = []; 
+            const autoHidden = []; 
+
+            const excludeRegex = /demo|un\s?-?\s?lock\s?-?\s?e\s?d/i; 
+            
+            for (const match of matches) { 
+                const model = match[1].trim(); 
+                let capacity = match[2].trim();
+                capacity = capacity.replace(/\s+GB/i, 'GB'); // v21 Fix
+                
+                const modelAndCapacity = `${model} ${capacity}`; 
+                const color = match[3].trim(); 
+                const quantity = parseInt(match[4].match(/\d+/)[0], 10); 
+                const item = [modelAndCapacity, color, quantity]; 
+                
+                if (excludeRegex.test(match[0])) { 
+                    autoHidden.push({ name: modelAndCapacity, count: quantity, type: /demo/i.test(match[0]) ? 'demo' : 'unlocked' });
+                } else {
+                    postFilterList.push(item); 
+                }
+            } 
+            return { preFilterList, postFilterList, autoHidden }; 
+        };
+        
+        const abbreviateColor = (color) => {
+            for (const [fullColor, abbrev] of Object.entries(COLOR_ABBREVIATIONS)) {
+                if (color.toLowerCase() === fullColor.toLowerCase()) return abbrev;
+            }
+            let processed = color;
+            for (const [fullColor, abbrev] of Object.entries(COLOR_ABBREVIATIONS)) {
+                const regex = new RegExp(`\\b${fullColor}\\b`, 'gi');
+                processed = processed.replace(regex, abbrev);
+            }
+            return processed;
+        };
+
+        const abbreviateModel = (model) => {
+            const sortedModels = Object.keys(DEVICE_ABBREVIATIONS).sort((a, b) => b.length - a.length);
+            for (const fullModel of sortedModels) {
+                if (model.startsWith(fullModel)) return model.replace(fullModel, DEVICE_ABBREVIATIONS[fullModel]);
+            }
+            return model;
+        };
+
+        const abbreviateDetails = (details) => {
+            return abbreviateColor(details); 
+        };
+
+        const consolidateInventory = (inventoryList) => { const consolidationMap = new Map(); for (const [modelAndCapacity, color, quantity] of inventoryList) { const key = modelAndCapacity; if (!consolidationMap.has(key)) { consolidationMap.set(key, { modelAndCapacity, details: [] }); } const abbreviated = abbreviateColor(color); consolidationMap.get(key).details.push({ color: abbreviated, quantity }); } const consolidatedList = []; for (const value of consolidationMap.values()) { const detailsString = value.details.map(d => `${d.quantity} ${d.color}`).join(', '); consolidatedList.push([value.modelAndCapacity, detailsString]); } return consolidatedList; };
+        
+        const categorizePdf = (text) => { const lowerCaseText = text.toLowerCase(); if (lowerCaseText.includes('at&t')) return 'att'; if (lowerCaseText.includes('verizon') || lowerCaseText.includes('vzw')) return 'vzw'; if (lowerCaseText.includes('t-mobile') || lowerCaseText.includes('tmo')) return 'tmo'; return 'unknown'; };
+        
+        const prepareDataForDisplay = () => { 
+            const preparedState = { att: {}, vzw: {}, tmo: {} }; 
+            if (isolateIphonesCheckbox.checked) { 
+                const priorityOrder = ['att', 'vzw', 'tmo']; 
+                let iphoneSource = null; 
+                for (const carrier of priorityOrder) { 
+                    if (appState[carrier].consolidatedList.some(item => item[0].toLowerCase().startsWith('iphone'))) { iphoneSource = carrier; break; } 
+                } 
+                preparedState.apple = { consolidatedList: [] }; 
+                for (const carrier of ['att', 'vzw', 'tmo']) { 
+                    preparedState[carrier].consolidatedList = appState[carrier].consolidatedList.filter(item => !item[0].toLowerCase().startsWith('iphone')); 
+                    if (carrier === iphoneSource) { 
+                        const iphones = appState[carrier].consolidatedList.filter(item => item[0].toLowerCase().startsWith('iphone')).map(item => ({ modelAndCapacity: item[0], details: item[1], sourceCarrier: carrier })); 
+                        preparedState.apple.consolidatedList = iphones; 
+                    } 
+                } 
+            } else { 
+                preparedState.att.consolidatedList = appState.att.consolidatedList; 
+                preparedState.vzw.consolidatedList = appState.vzw.consolidatedList; 
+                preparedState.tmo.consolidatedList = appState.tmo.consolidatedList; 
+            } 
+            return preparedState; 
+        };
+        
+        // --- RICH TEXT HELPER FOR FOOTER ---
+        const drawRichText = (doc, x, y, segments, maxWidth, lineHeight) => {
+            let cursorX = x;
+            let cursorY = y;
+            
+            segments.forEach(seg => {
+                doc.setFont("helvetica", seg.bold ? "bold" : "normal"); // v21 normal
+                const words = seg.text.split(' ');
+                
+                words.forEach((word, index) => {
+                    const wordWithSpace = word + (index < words.length - 1 ? ' ' : '');
+                    const w = doc.getTextWidth(wordWithSpace);
+                    
+                    if (cursorX + w > x + maxWidth) {
+                        cursorX = x;
+                        cursorY += lineHeight;
+                    }
+                    
+                    doc.text(wordWithSpace, cursorX, cursorY);
+                    cursorX += w;
+                });
+            });
+            return cursorY;
+        };
+
+        const generateFinalPdf = (state, comments) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const topMargin = 12.7, sideMargin = 6.35, bottomMargin = 6.35;
+            const pageHeight = 297, lineHeight = 4.5, sectionSpacing = 7;
+            const headerHeight = 6, listTopMargin = 2;
+            let yPosition = topMargin;
+            const showEdlps = showEdlpsToggle.checked;
+            
+            // --- PASS 1: COLLECT CITATIONS ---
+            const citationMap = new Map();
+            const getPriceObj = (cData, mName) => {
+                if (!cData) return null;
+                const keys = Object.keys(cData).sort((a, b) => b.length - a.length);
+                for (const key of keys) {
+                    if (mName.startsWith(key)) return cData[key];
+                }
+                return null;
+            };
+
+            const uniqueDates = new Set();
+            const collectDates = (carrier, list) => {
+                list.forEach(item => {
+                    const isApple = carrier === 'apple';
+                    const rawModel = isApple ? item.modelAndCapacity : item[0];
+                    const sourceCarrier = isApple ? item.sourceCarrier : carrier;
+                    const emphasisState = (appState[sourceCarrier].emphasis.get(rawModel) || {});
+                    if (emphasisState.hidden) return;
+
+                    if (isApple) {
+                        const pAtt = getPriceObj(EDLP_DATA.att, rawModel);
+                        const pVzw = getPriceObj(EDLP_DATA.vzw, rawModel);
+                        const pTmo = getPriceObj(EDLP_DATA.tmo, rawModel);
+                        if (pAtt && pAtt.last_updated) uniqueDates.add(new Date(pAtt.last_updated).toDateString());
+                        if (pVzw && pVzw.last_updated) uniqueDates.add(new Date(pVzw.last_updated).toDateString());
+                        if (pTmo && pTmo.last_updated) uniqueDates.add(new Date(pTmo.last_updated).toDateString());
+                    } else {
+                        const p = getPriceObj(EDLP_DATA[sourceCarrier], rawModel);
+                        if (p && p.last_updated) uniqueDates.add(new Date(p.last_updated).toDateString());
+                    }
+                });
+            };
+
+            const carriersForLayout = Object.keys(state).filter(c => state[c].consolidatedList && state[c].consolidatedList.length > 0);
+            carriersForLayout.forEach(c => collectDates(c, state[c].consolidatedList));
+
+            const sortedDates = Array.from(uniqueDates).sort((a, b) => new Date(a) - new Date(b));
+            sortedDates.forEach((dateStr, index) => {
+                const shortDate = new Date(dateStr).toLocaleDateString('en-US', { month: 'numeric', day: '2-digit' });
+                if (!citationMap.has(shortDate)) {
+                    citationMap.set(shortDate, index + 1);
+                }
+            });
+
+            const getCitation = (ts) => {
+                if (!ts) return null;
+                const shortDate = new Date(ts).toLocaleDateString('en-US', { month: 'numeric', day: '2-digit' });
+                return citationMap.get(shortDate);
+            };
+
+            // --- HEADER (v21) ---
+            const dateNow = new Date();
+            const dateStr = dateNow.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+            const timeStr = dateNow.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(' ', '');
+            
+            // Build Store String (v21 Format)
+            const storeSet = new Set();
+            ['att', 'vzw', 'tmo'].forEach(c => {
+                if (appState[c].storeNumber) {
+                    const nick = STORE_NICKNAMES[appState[c].storeNumber];
+                    storeSet.add(nick ? `${nick} (#${appState[c].storeNumber})` : `#${appState[c].storeNumber}`);
+                }
+            });
+            const storeList = Array.from(storeSet).join(', ');
+            const storeString = storeList ? `(${storeList})` : '';
+
+            // Line 1: Attribution + Store
+            const headerText1 = `${dateStr} ${timeStr}`;
+            const headerText2 = ` ${storeString} Inventory report made with Optimizer, an unofficial and experimental work app created by Abraham.`;
+            doc.setFontSize(8); 
+            doc.setFont("helvetica", "bold");
+            doc.text(headerText1, sideMargin, yPosition);
+            const w1 = doc.getTextWidth(headerText1);
+            doc.setFont("helvetica", "normal");
+            doc.text(headerText2, sideMargin + w1, yPosition);
+            yPosition += lineHeight;
+
+            // Line 2: Sources
+            const attDate = appState.att.fileDate ? appState.att.fileDate.replace(/\/20\d{2}/, '').replace(/:\d{2}\s/, ' ') : 'N/A';
+            const vzwDate = appState.vzw.fileDate ? appState.vzw.fileDate.replace(/\/20\d{2}/, '').replace(/:\d{2}\s/, ' ') : 'N/A';
+            const tmoDate = appState.tmo.fileDate ? appState.tmo.fileDate.replace(/\/20\d{2}/, '').replace(/:\d{2}\s/, ' ') : 'N/A';
+            const sourcesLabel = "Inventory Report Sources: ";
+            const sourcesContent = `ATT (${attDate}), VZW (${vzwDate}), TMO (${tmoDate}).`;
+            
+            doc.setFont("helvetica", "bold");
+            doc.text(sourcesLabel, sideMargin, yPosition);
+            const wSources = doc.getTextWidth(sourcesLabel);
+            doc.setFont("helvetica", "normal");
+            doc.text(sourcesContent, sideMargin + wSources, yPosition);
+            yPosition += lineHeight;
+
+            // Line 3: EDLP Citations
+            if (showEdlps && citationMap.size > 0) {
+                const edlpLabel = "EDLP values last verified on: ";
+                doc.setFont("helvetica", "bold");
+                doc.text(edlpLabel, sideMargin, yPosition);
+                let currentX = sideMargin + doc.getTextWidth(edlpLabel);
+                
+                doc.setFont("helvetica", "normal");
+                const sortedCitations = Array.from(citationMap.entries()).sort((a, b) => a[1] - b[1]);
+                
+                sortedCitations.forEach(([date, index], i) => {
+                    doc.text(date, currentX, yPosition);
+                    currentX += doc.getTextWidth(date);
+                    doc.setFontSize(5);
+                    doc.text(`[${index}]`, currentX + 0.5, yPosition - 1);
+                    currentX += doc.getTextWidth(`[${index}]`) + 1;
+                    doc.setFontSize(8);
+                    let sep = "";
+                    if (i === sortedCitations.length - 1) {
+                        sep = ".";
+                    } else if (i === sortedCitations.length - 2) {
+                        sep = (sortedCitations.length === 2) ? " and " : ", and ";
+                    } else {
+                        sep = ", ";
+                    }
+                    doc.text(sep, currentX, yPosition);
+                    currentX += doc.getTextWidth(sep);
+                });
+                yPosition += lineHeight;
+            }
+            
+            if (comments) { const splitComments = doc.splitTextToSize(comments, 190); doc.setFont("helvetica", "italic").text(splitComments, sideMargin, yPosition); yPosition += (splitComments.length * (lineHeight - 1)); }
+            yPosition += sectionSpacing;
+            const contentStartY = yPosition;
+
+            // --- MAIN TABLE RENDERING ---
+            let modelX = sideMargin;
+            let startRightX = 100;
+            if (showEdlps) {
+                if (isolateIphonesCheckbox.checked) {
+                    startRightX = 75;
+                } else {
+                    startRightX = 95;
+                }
+            }
+
+            const calculateSectionHeight = (carrier, list) => { 
+                if (!list || list.length === 0) return 0; 
+                let visibleCount = 0; 
+                list.forEach(item => { 
+                    const model = (carrier === 'apple') ? item.modelAndCapacity : item[0]; 
+                    const source = (carrier === 'apple') ? item.sourceCarrier : carrier; 
+                    const emphasis = appState[source].emphasis.get(model) || {}; 
+                    if (!emphasis.hidden) { visibleCount++; } 
+                }); 
+                let legendHeight = 0;
+                if (showEdlps) {
+                    legendHeight = (carrier === 'apple' && isolateIphonesCheckbox.checked) ? lineHeight * 2 : lineHeight;
+                } else {
+                    legendHeight = lineHeight; 
+                }
+                return headerHeight + legendHeight + listTopMargin + (visibleCount * lineHeight) + sectionSpacing; 
+            };
+
+            const leftColumnCarriers = carriersForLayout.filter(c => c !== 'apple' && c !== 'tmo');
+            const rightColumnCarriers = carriersForLayout.filter(c => c === 'apple' || c === 'tmo');
+            
+            let leftColumnHeight = 0; leftColumnCarriers.forEach(c => leftColumnHeight += calculateSectionHeight(c, state[c].consolidatedList));
+            let rightColumnHeight = 0; rightColumnCarriers.forEach(c => rightColumnHeight += calculateSectionHeight(c, state[c].consolidatedList));
+            
+            const footerHeight = 20; 
+            const availablePageHeight = pageHeight - contentStartY - bottomMargin - footerHeight; 
+            const useTwoColumnLayout = (leftColumnHeight <= availablePageHeight) && (rightColumnHeight <= availablePageHeight) && (rightColumnHeight > 0);
+
+            let maxCursorY = contentStartY;
+
+            const drawSection = (carrier, data, currentX) => { 
+                doc.setFont("helvetica", "bold").setFontSize(10); 
+                const headerText = (carrier === 'apple') ? 'Apple Devices' : carrier.toUpperCase(); 
+                const headerWidth = doc.getTextWidth(headerText); 
+                doc.text(headerText, currentX, yPosition); 
+                doc.setLineWidth(0.2).line(currentX, yPosition + 0.5, currentX + headerWidth, yPosition + 0.5); 
+                yPosition += headerHeight; 
+                
+                if (showEdlps) {
+                    doc.setFontSize(6).setFont("helvetica", "bold");
+                    if (carrier === 'apple') {
+                        const curEdlpX = currentX + 30;
+                        const curDetailsX = currentX + 85;
+                        doc.text("EDLPs", curEdlpX, yPosition);
+                        yPosition += lineHeight;
+                        doc.text("ITEM", currentX, yPosition);
+                        doc.text("ATT, VZW, TMO (dp + /mo)", curEdlpX, yPosition);
+                        doc.text("QTY", curDetailsX, yPosition);
+                        yPosition += lineHeight;
+                    } else if (carrier === 'tmo') {
+                        const curEdlpX = currentX + 30; 
+                        const curDetailsX = currentX + (isolateIphonesCheckbox.checked ? 85 : 65);
+                        doc.text("ITEM", currentX, yPosition);
+                        doc.text("EDLP (dp + /mo)", curEdlpX, yPosition);
+                        doc.text("QTY", curDetailsX, yPosition);
+                        yPosition += lineHeight;
+                    } else {
+                        const curEdlpX = currentX + 28;
+                        const curDetailsX = currentX + 38; 
+                        doc.text("ITEM", currentX, yPosition);
+                        doc.text("EDLP", curEdlpX, yPosition);
+                        doc.text("QTY", curDetailsX, yPosition); 
+                        yPosition += lineHeight;
+                    }
+                } else {
+                    doc.setFontSize(6).setFont("helvetica", "bold");
+                    doc.text("ITEM", currentX, yPosition);
+                    doc.text("QTY", currentX + 50, yPosition); 
+                    yPosition += lineHeight;
+                }
+
+                doc.setFontSize(8); 
+                
+                data.consolidatedList.forEach(item => { 
+                    const isApple = carrier === 'apple';
+                    const rawModel = isApple ? item.modelAndCapacity : item[0];
+                    const rawDetails = isApple ? item.details : item[1];
+                    const sourceCarrier = isApple ? item.sourceCarrier : carrier;
+                    const emphasisState = (appState[sourceCarrier].emphasis.get(rawModel) || {}); 
+                    
+                    if (emphasisState.hidden) return; 
+
+                    let displayModel = rawModel;
+                    let displayDetails = rawDetails;
+                    let edlpSegments = []; 
+
+                    if (showEdlps) {
+                        displayModel = abbreviateModel(rawModel);
+                        displayDetails = abbreviateDetails(rawDetails);
+                        
+                        const findPrice = (cData, mName) => getPriceObj(cData, mName);
+                        const formatCurrency = (val) => val !== undefined ? `$${val}` : '$??';
+
+                        if (isApple) {
+                           const pAtt = findPrice(EDLP_DATA.att, rawModel);
+                           const pVzw = findPrice(EDLP_DATA.vzw, rawModel);
+                           const pTmo = findPrice(EDLP_DATA.tmo, rawModel);
+                           
+                           const tAtt = pAtt && pAtt.total !== undefined ? `$${pAtt.total}` : "$???";
+                           const citAtt = pAtt ? getCitation(pAtt.last_updated) : null;
+                           edlpSegments.push({ text: tAtt, citation: citAtt });
+                           edlpSegments.push({ text: ", ", citation: null });
+
+                           const tVzw = pVzw && pVzw.total !== undefined ? `$${pVzw.total}` : "$???";
+                           const citVzw = pVzw ? getCitation(pVzw.last_updated) : null;
+                           edlpSegments.push({ text: tVzw, citation: citVzw });
+                           edlpSegments.push({ text: ", ", citation: null });
+                           
+                           let tTmoText = "$???";
+                           let citTmo = null;
+                           if (pTmo) {
+                               citTmo = getCitation(pTmo.last_updated);
+                               if (pTmo.dp !== undefined) {
+                                   tTmoText = `${formatCurrency(pTmo.total)} (${formatCurrency(pTmo.dp)} + ${formatCurrency(pTmo.mo)}/mo)`;
+                               } else {
+                                   tTmoText = formatCurrency(pTmo.total);
+                               }
+                           }
+                           edlpSegments.push({ text: tTmoText, citation: citTmo });
+
+                        } else {
+                           const priceData = findPrice(EDLP_DATA[sourceCarrier], rawModel);
+                           if (priceData) {
+                               const cit = getCitation(priceData.last_updated);
+                               let txt = "";
+                               if (sourceCarrier === 'tmo') {
+                                   if (priceData.dp !== undefined) {
+                                       txt = `${formatCurrency(priceData.total)} (${formatCurrency(priceData.dp)} + ${formatCurrency(priceData.mo)}/mo)`;
+                                   } else {
+                                       txt = formatCurrency(priceData.total);
+                                   }
+                               } else {
+                                   txt = priceData.total !== undefined ? `$${priceData.total}` : "";
+                               }
+                               if (txt) edlpSegments.push({ text: txt, citation: cit });
+                           }
+                        }
+                    }
+
+                    doc.setFont('helvetica', 'normal'); 
+                    
+                    let curModelX = currentX;
+                    let curEdlpX = 0;
+                    let curDetailsX = 0;
+
+                    if (showEdlps) {
+                        if (isApple) {
+                            curEdlpX = currentX + 30; 
+                            curDetailsX = currentX + 85; 
+                        } else if (carrier === 'tmo') {
+                            curEdlpX = currentX + 30; 
+                            curDetailsX = currentX + (isolateIphonesCheckbox.checked ? 85 : 65);
+                        } else {
+                            curEdlpX = currentX + 28;
+                            curDetailsX = currentX + 38;
+                        }
+                    } else {
+                        curDetailsX = currentX + 50; 
+                    }
+
+                    if (emphasisState.full || emphasisState.partial) { 
+                        doc.setFillColor(150, 150, 150); 
+                        const textDimensions = doc.getTextDimensions(displayDetails, { fontSize: 8 }); 
+                        const rectY = yPosition - textDimensions.h + 0.2; 
+                        const rectHeight = textDimensions.h + 0.5; 
+                        let widthSpan = 75;
+                        if (showEdlps) {
+                            if (carrier === 'att' || carrier === 'vzw') widthSpan = 60; 
+                            else if (isApple) widthSpan = 110; 
+                            else if (carrier === 'tmo') widthSpan = isolateIphonesCheckbox.checked ? 110 : 90; 
+                        }
+                        let rectWidth = widthSpan; 
+                        if (!emphasisState.full) {
+                             const modelDimensions = doc.getTextDimensions(displayModel, { fontSize: 8 }); 
+                             rectWidth = modelDimensions.w + 2; 
+                        }
+                        doc.rect(curModelX - 1, rectY, rectWidth, rectHeight, 'F'); 
+                    } 
+                    
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(displayModel, curModelX, yPosition); 
+                    
+                    if (showEdlps) {
+                        doc.setFontSize(7); 
+                        let segX = curEdlpX;
+                        edlpSegments.forEach(seg => {
+                            doc.text(seg.text, segX, yPosition);
+                            const w = doc.getTextWidth(seg.text);
+                            if (seg.citation) {
+                                doc.setFontSize(5);
+                                doc.text(`[${seg.citation}]`, segX + w + 0.5, yPosition - 1); 
+                                doc.setFontSize(7); 
+                                segX += w + 2.5; 
+                            } else {
+                                segX += w;
+                            }
+                        });
+                        doc.setFontSize(8);
+                    }
+                    doc.text(displayDetails, curDetailsX, yPosition); 
+                    yPosition += lineHeight; 
+                }); 
+                yPosition += sectionSpacing; 
+                maxCursorY = Math.max(maxCursorY, yPosition);
+            }; 
+            
+            if (useTwoColumnLayout) { 
+                leftColumnCarriers.forEach(c => drawSection(c, state[c], sideMargin)); 
+                yPosition = contentStartY; 
+                rightColumnCarriers.forEach(c => {
+                    drawSection(c, state[c], startRightX);
+                });
+            } else { 
+                carriersForLayout.forEach(carrier => { 
+                    const sectionHeight = calculateSectionHeight(carrier, state[carrier].consolidatedList); 
+                    if (yPosition + sectionHeight > (pageHeight - bottomMargin - footerHeight) && yPosition > contentStartY) { 
+                        doc.addPage(); 
+                        yPosition = topMargin; 
+                    } 
+                    drawSection(carrier, state[carrier], sideMargin); 
+                }); 
+            } 
+            if (carriersForLayout.length === 0) { doc.setFont("helvetica", "normal").setFontSize(12).text("No inventory found.", sideMargin, yPosition); } 
+            
+            // --- FOOTER (Hidden Items v21) ---
+            const footerY = Math.min(maxCursorY + (lineHeight * 2), pageHeight - 12.7);
+            doc.setFontSize(7);
+            
+            // Generate Auto-Hidden List
+            const autoHiddenSegments = [];
+            
+            // Demos
+            ['att', 'vzw', 'tmo'].forEach(c => {
+                const demos = appState[c].autoHidden.filter(i => i.type === 'demo');
+                demos.forEach(d => {
+                    let name = d.name;
+                    if (HIDDEN_CLEANUP[name]) name = HIDDEN_CLEANUP[name]; 
+                    autoHiddenSegments.push({ text: `${d.count}x ${name} (${c.toUpperCase()})`, bold: false });
+                });
+            });
+
+            // Unlocked (Consolidated)
+            const unlockedMap = new Map(); 
+            ['att', 'vzw', 'tmo'].forEach(c => {
+                const unlocked = appState[c].autoHidden.filter(i => i.type === 'unlocked');
+                unlocked.forEach(u => {
+                    let name = u.name;
+                    if (HIDDEN_CLEANUP[name]) name = HIDDEN_CLEANUP[name]; 
+                    if (!unlockedMap.has(name)) unlockedMap.set(name, []);
+                    unlockedMap.get(name).push({ count: u.count, carrier: c.toUpperCase() });
+                });
+            });
+
+            unlockedMap.forEach((instances, name) => {
+                const firstCount = instances[0].count;
+                const allSame = instances.every(i => i.count === firstCount);
+                
+                if (allSame && instances.length > 1) {
+                    autoHiddenSegments.push({ text: `${firstCount}x ${name}`, bold: false });
+                } else {
+                    instances.forEach(i => {
+                        autoHiddenSegments.push({ text: `${i.count}x ${name} (${i.carrier})`, bold: false });
+                    });
+                }
+            });
+
+            // Generate Manual Hidden List
+            const manualHiddenSegments = [];
+            ['att', 'vzw', 'tmo'].forEach(c => {
+                appState[c].consolidatedList.forEach(item => {
+                    const name = item[0];
+                    const emphasis = appState[c].emphasis.get(name);
+                    if (emphasis && emphasis.hidden) {
+                        const quantity = item[1].split(', ').reduce((acc, part) => acc + parseInt(part.split(' ')[0]), 0);
+                        const isIphone = name.toLowerCase().startsWith('iphone');
+                        const text = `${quantity}x ${name}` + (isIphone ? '' : ` (${c.toUpperCase()})`);
+                        manualHiddenSegments.push({ text: text, bold: false });
+                    }
+                });
+            });
+
+            // Build Sentence (v21 Bold Prefixes)
+            const richSegments = [];
+            const joinSegments = (list) => {
+                const res = [];
+                list.forEach((seg, i) => {
+                    res.push(seg);
+                    if (i < list.length - 1) res.push({ text: ", ", bold: false });
+                });
+                return res;
+            };
+
+            if (autoHiddenSegments.length === 0 && manualHiddenSegments.length === 0) {
+                richSegments.push({ text: "No phones were hidden for this report.", bold: true });
+            } else {
+                if (autoHiddenSegments.length > 0) {
+                    richSegments.push({ text: "The following devices were automatically hidden from the report: ", bold: true });
+                    richSegments.push(...joinSegments(autoHiddenSegments));
+                    richSegments.push({ text: ". ", bold: false });
+                }
+                if (manualHiddenSegments.length > 0) {
+                    const prefix = autoHiddenSegments.length > 0 ? "Manually hidden: " : "The following devices were manually hidden from the report: ";
+                    richSegments.push({ text: prefix, bold: true });
+                    richSegments.push(...joinSegments(manualHiddenSegments));
+                    richSegments.push({ text: ".", bold: false });
+                }
+            }
+
+            drawRichText(doc, sideMargin, footerY, richSegments, 190, 3.5);
+
+            return doc.output('datauristring'); 
+        };
+
+        // --- EVENT HANDLER FUNCTIONS ---
+        const handleFileUploads = async (files) => { 
+            if (!files || files.length === 0) return; 
+            uploadArea.querySelector('p').textContent = 'Processing...'; 
+            if (devConsoleToggle.checked) devConsoleOutput.textContent = ''; 
+            for (const file of files) { 
+                try { 
+                    const text = await getTextFromPdf(file); 
+                    const carrier = categorizePdf(text); 
+                    if (carrier === 'unknown') { alert(`Could not determine carrier for file: ${file.name}`); continue; } 
+                    
+                    // Date Extraction
+                    const dateMatch = text.match(/Date:\s*(.*?)(?=\s+Store)/);
+                    if (dateMatch && dateMatch[1]) {
+                        appState[carrier].fileDate = dateMatch[1].trim();
+                    }
+                    
+                    // Store Extraction (v19)
+                    const storeMatch = text.match(/Store:\s*(\d+)/);
+                    if (storeMatch && storeMatch[1]) {
+                        appState[carrier].storeNumber = storeMatch[1].trim();
+                    }
+
+                    const { preFilterList, postFilterList, autoHidden } = parseInventoryText(text); 
+                    appState[carrier].consolidatedList = consolidateInventory(postFilterList); 
+                    appState[carrier].autoHidden = autoHidden; 
+
+                    const statusSection = document.getElementById(`${carrier}-status`); 
+                    statusSection.querySelector('.status-filename').textContent = file.name; 
+                    statusSection.style.display = 'block'; 
+                    if (devConsoleToggle.checked) { 
+                        let logContent = `--- DEBUG LOG FOR: ${file.name} (detected as ${carrier.toUpperCase()}) ---\n\n`; 
+                        logContent += `== RAW TEXT EXTRACTED ==\n${text}\n\n`; 
+                        logContent += `== ITEMS FOUND (PRE-FILTER) ==\n${preFilterList.map(item => item.join(' | ')).join('\n')}\n\n`; 
+                        logContent += `== ITEMS KEPT (POST-FILTER) ==\n${postFilterList.map(item => item.join(' | ')).join('\n')}\n\n`; 
+                        devConsoleOutput.textContent += logContent; 
+                    } 
+                } catch (error) { alert(`Failed to process file: ${file.name}`); console.error(error); } 
+            } 
+            uploadArea.querySelector('p').textContent = 'Drag & drop files here.'; 
+        };
+        
+        const openEmphasisModal = () => { const listContainer = document.getElementById('emphasis-list-container'); listContainer.innerHTML = ''; const processedData = prepareDataForDisplay(); const carriersToDisplay = Object.keys(processedData).filter(c => processedData[c].consolidatedList.length > 0); carriersToDisplay.forEach(carrier => { const header = document.createElement('div'); header.className = 'emphasis-list-carrier-header'; header.textContent = (carrier === 'apple') ? 'Apple Devices' : carrier.toUpperCase(); listContainer.appendChild(header); processedData[carrier].consolidatedList.forEach(item => { const isApple = carrier === 'apple'; const modelAndCapacity = isApple ? item.modelAndCapacity : item[0]; const details = isApple ? item.details : item[1]; const sourceCarrier = isApple ? item.sourceCarrier : carrier; const currentEmphasis = appState[sourceCarrier].emphasis.get(modelAndCapacity) || { partial: false, full: false, hidden: false }; const itemDiv = document.createElement('div'); itemDiv.className = 'emphasis-item'; if (currentEmphasis.hidden) itemDiv.classList.add('item-hidden'); const hideDiv = document.createElement('div'); hideDiv.className = 'emphasis-item-hide'; hideDiv.innerHTML = HIDE_ICON_SVG; hideDiv.dataset.key = modelAndCapacity; hideDiv.dataset.carrier = sourceCarrier; const partialCheckbox = document.createElement('input'); partialCheckbox.type = 'checkbox'; partialCheckbox.checked = currentEmphasis.partial; partialCheckbox.disabled = currentEmphasis.hidden; partialCheckbox.dataset.key = modelAndCapacity; partialCheckbox.dataset.carrier = sourceCarrier; partialCheckbox.dataset.type = 'partial'; const fullCheckbox = document.createElement('input'); fullCheckbox.type = 'checkbox'; fullCheckbox.checked = currentEmphasis.full; fullCheckbox.disabled = currentEmphasis.hidden; fullCheckbox.dataset.key = modelAndCapacity; fullCheckbox.dataset.carrier = sourceCarrier; fullCheckbox.dataset.type = 'full'; const textDiv = document.createElement('div'); textDiv.className = 'emphasis-item-text'; textDiv.textContent = `${modelAndCapacity} - ${details}`; itemDiv.appendChild(hideDiv); itemDiv.appendChild(partialCheckbox); itemDiv.appendChild(fullCheckbox); itemDiv.appendChild(textDiv); listContainer.appendChild(itemDiv); }); }); emphasisModal.style.display = 'flex'; };
+
+        unhideAllBtn.addEventListener('click', () => {
+            ['att', 'vzw', 'tmo'].forEach(c => {
+                appState[c].emphasis.forEach((val, key) => {
+                    val.hidden = false;
+                    appState[c].emphasis.set(key, val);
+                });
+            });
+            saveSettings();
+            openEmphasisModal();
+        });
+
+        // --- ATTACH EVENT LISTENERS ---
+        highlightBtn.addEventListener('click', openEmphasisModal);
+        processBtn.addEventListener('click', () => { const processedData = prepareDataForDisplay(); const comments = commentsInput.value; const pdfDataUri = generateFinalPdf(processedData, comments); iframe.src = pdfDataUri; previewModal.style.display = 'flex'; });
+        uploadArea.addEventListener('click', () => uploadInput.click());
+        uploadInput.addEventListener('change', (e) => handleFileUploads(e.target.files));
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
+        uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFileUploads(e.dataTransfer.files); });
+        isolateIphonesCheckbox.addEventListener('change', saveSettings);
+        devConsoleToggle.addEventListener('change', () => { 
+            const isChecked = devConsoleToggle.checked;
+            devConsoleContainer.style.display = isChecked ? 'block' : 'none';
+            downloadBtn.style.display = isChecked ? 'inline-block' : 'none';
+        });
+        
+        // Listener for EDLP toggle to show/hide warning
+        showEdlpsToggle.addEventListener('change', () => {
+             if (showEdlpsToggle.checked) {
+                 edlpWarning.classList.add('visible');
+             } else {
+                 edlpWarning.classList.remove('visible');
+             }
+        });
+        
+        // Initialize EDLP warning state based on default or loaded setting
+        if (showEdlpsToggle.checked) {
+             edlpWarning.classList.add('visible');
+        }
+
+        copyLogBtn.addEventListener('click', () => { const logText = devConsoleOutput.textContent; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(logText).then(() => { alert('Log copied to clipboard!'); }).catch(err => { console.warn('Modern clipboard API failed, trying fallback.', err); legacyCopy(logText); }); } else { legacyCopy(logText); } });
+        const legacyCopy = (text) => { const textArea = document.createElement("textarea"); textArea.value = text; textArea.style.position = "fixed"; textArea.style.top = 0; textArea.style.left = 0; textArea.style.opacity = 0; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { const successful = document.execCommand('copy'); if (!successful) { alert('Failed to copy log.'); } } catch (err) { alert('Failed to copy log.'); } document.body.removeChild(textArea); };
+        
+        previewCloseBtn.addEventListener('click', () => previewModal.style.display = 'none');
+        emphasisCloseBtn.addEventListener('click', () => emphasisModal.style.display = 'none');
+        emphasisDoneBtn.addEventListener('click', () => emphasisModal.style.display = 'none');
+        devModeCloseBtn.addEventListener('click', () => { if (devModalCloseable.button) devModeModal.style.display = 'none'; });
+        window.addEventListener('click', (event) => { if (event.target == previewModal) previewModal.style.display = 'none'; if (event.target == emphasisModal) emphasisModal.style.display = 'none'; if (event.target == devModeModal && devModalCloseable.backdrop) devModeModal.style.display = 'none'; });
+        downloadBtn.addEventListener('click', () => { const link = document.createElement('a'); link.href = iframe.src; link.download = 'Combined_Inventory.pdf'; link.click(); });
+        
+        emphasisModal.addEventListener('click', (e) => { const target = e.target.closest('.emphasis-item-hide'); if (!target) return; const { key, carrier } = target.dataset; const state = appState[carrier].emphasis.get(key) || { partial: false, full: false }; state.hidden = !state.hidden; appState[carrier].emphasis.set(key, state); const parentItem = target.closest('.emphasis-item'); parentItem.classList.toggle('item-hidden'); parentItem.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.disabled = state.hidden); saveSettings(); });
+        emphasisModal.addEventListener('change', (e) => { const target = e.target; if (target.type !== 'checkbox') return; const isMaster = target.id.startsWith('master-'); if (isMaster) { const masterType = target.id.includes('partial') ? 'partial' : 'full'; const isChecking = target.checked; const allItems = emphasisModal.querySelectorAll('.emphasis-item:not(.item-hidden)'); allItems.forEach(item => { const partialBox = item.querySelector('[data-type="partial"]'); const fullBox = item.querySelector('[data-type="full"]'); const key = partialBox.dataset.key; const carrier = partialBox.dataset.carrier; const state = appState[carrier].emphasis.get(key) || { partial: false, full: false }; if (masterType === 'partial') { partialBox.checked = isChecking; state.partial = isChecking; if (!isChecking) { fullBox.checked = false; state.full = false; } } else { fullBox.checked = isChecking; state.full = isChecking; if (isChecking) { partialBox.checked = true; state.partial = true; } } appState[carrier].emphasis.set(key, state); }); const masterPartial = document.getElementById('master-partial-checkbox'); const masterFull = document.getElementById('master-full-checkbox'); if (masterType === 'full' && isChecking) masterPartial.checked = true; if (masterType === 'partial' && !isChecking) masterFull.checked = false; } else if (target.dataset.key) { const { key, carrier, type } = target.dataset; const state = appState[carrier].emphasis.get(key) || { partial: false, full: false }; state[type] = target.checked; const parentItem = target.closest('.emphasis-item'); if (parentItem) { const partialBox = parentItem.querySelector('[data-type="partial"]'); const fullBox = parentItem.querySelector('[data-type="full"]'); if (type === 'full' && target.checked) { state.partial = true; if (partialBox) partialBox.checked = true; } if (type === 'partial' && !target.checked) { state.full = false; if (fullBox) fullBox.checked = false; } } appState[carrier].emphasis.set(key, state); } saveSettings(); });
+        
+        let clickCount = 0, lastClick = 0;
+        versionText.addEventListener('click', () => { const now = Date.now(); if (now - lastClick > 500) { clickCount = 0; } lastClick = now; clickCount++; if (clickCount === 7) { devModalCloseable.button = false; devModalCloseable.backdrop = false; devModeModal.style.display = 'flex'; setTimeout(() => { devModalCloseable.button = true; }, 500); setTimeout(() => { devModalCloseable.backdrop = true; }, 1000); clickCount = 0; } });
+        commentsInput.addEventListener('input', (e) => { const konami = "upupdowndownleftrightleftrightba"; const input = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''); konamiMessage.style.display = input.includes(konami) ? 'block' : 'none'; });
+
+        // Initial load of settings from localStorage
+        loadSettings();
+    });
+    </script>
+
+</body>
+</html>
