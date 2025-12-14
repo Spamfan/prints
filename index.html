@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints (v2 beta)</title>
+    <title>Prints (v3 beta)</title>
     <style>
         /* Base Reset */
         * {
@@ -33,7 +33,7 @@
 
         /* THE GRID & THE "PLUS" CUT LINES */
         .quadrant {
-            padding: 0.5in; /* Reduced padding to move text up */
+            padding: 0.5in;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -91,32 +91,33 @@
             margin-top: 2px;
         }
 
-        /* LINES LOGIC */
+        /* THE PROPORTIONAL FLEX LOGIC (v3) */
         
-        /* Fixed width segments for start of Phone/SSN */
-        .line-fixed {
-            border-bottom: 1px solid black;
-            height: 1px;
-            flex-shrink: 0;
+        .input-wrapper {
+            flex-grow: 1; /* This takes up all remaining width after the label */
+            display: flex;
+            align-items: flex-end;
         }
 
-        /* The Stretcher: This always fills the rest of the row */
-        .line-grow {
-            flex-grow: 1;
+        /* The segments themselves */
+        .segment {
             border-bottom: 1px solid black;
             height: 1px;
+            /* Flex-grow will be applied via specific classes below */
         }
 
         .spacer {
             padding: 0 4px;
             font-weight: bold;
-            align-self: flex-end;
             line-height: 1;
+            flex-shrink: 0; /* Spacers never shrink */
         }
 
-        /* Specific Widths for Fixed Segments */
-        .w-3-digit { width: 35px; } /* Fits 3 chars */
-        .w-2-digit { width: 25px; } /* Fits 2 chars */
+        /* Proportional Weights based on "Unit Spaces" */
+        .unit-2 { flex: 2; } /* 22% relative weight */
+        .unit-3 { flex: 3; } /* 33% relative weight */
+        .unit-4 { flex: 4; } /* 44% relative weight */
+        .unit-full { flex: 1; } /* 100% relative weight */
 
         /* PRINT SETTINGS */
         @media print {
@@ -148,31 +149,37 @@
                     <span class="label">First Name:</span>
                     <span class="sub-label">OPTIONAL</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
 
-            <!-- Field 2: Phone (3 - 3 - Grow) -->
+            <!-- Field 2: Phone (3 - 3 - 4) -->
             <div class="field-row">
                 <div class="label-group">
                     <span class="label">Phone Number:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
-            <!-- Field 3: SSN (3 - 2 - Grow) -->
+            <!-- Field 3: SSN (3 - 2 - 4) -->
             <div class="field-row">
                 <div class="label-group">
                     <span class="label">SSN:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-2-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-2"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
             <!-- Field 4: Email -->
@@ -180,7 +187,9 @@
                 <div class="label-group">
                     <span class="label">Email:</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
         </div>
 
@@ -192,7 +201,9 @@
                     <span class="label">First Name:</span>
                     <span class="sub-label">OPTIONAL</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
 
             <!-- Field 2: Phone -->
@@ -200,11 +211,13 @@
                 <div class="label-group">
                     <span class="label">Phone Number:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
             <!-- Field 3: SSN -->
@@ -212,11 +225,13 @@
                 <div class="label-group">
                     <span class="label">SSN:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-2-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-2"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
             <!-- Field 4: Email -->
@@ -224,7 +239,9 @@
                 <div class="label-group">
                     <span class="label">Email:</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
         </div>
 
@@ -236,7 +253,9 @@
                     <span class="label">First Name:</span>
                     <span class="sub-label">OPTIONAL</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
 
             <!-- Field 2: Phone -->
@@ -244,11 +263,13 @@
                 <div class="label-group">
                     <span class="label">Phone Number:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
             <!-- Field 3: SSN -->
@@ -256,11 +277,13 @@
                 <div class="label-group">
                     <span class="label">SSN:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-2-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-2"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
             <!-- Field 4: Email -->
@@ -268,7 +291,9 @@
                 <div class="label-group">
                     <span class="label">Email:</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
         </div>
 
@@ -280,7 +305,9 @@
                     <span class="label">First Name:</span>
                     <span class="sub-label">OPTIONAL</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
 
             <!-- Field 2: Phone -->
@@ -288,11 +315,13 @@
                 <div class="label-group">
                     <span class="label">Phone Number:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
             <!-- Field 3: SSN -->
@@ -300,11 +329,13 @@
                 <div class="label-group">
                     <span class="label">SSN:</span>
                 </div>
-                <div class="line-fixed w-3-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-fixed w-2-digit"></div>
-                <span class="spacer">-</span>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-3"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-2"></div>
+                    <span class="spacer">-</span>
+                    <div class="segment unit-4"></div>
+                </div>
             </div>
 
             <!-- Field 4: Email -->
@@ -312,7 +343,9 @@
                 <div class="label-group">
                     <span class="label">Email:</span>
                 </div>
-                <div class="line-grow"></div>
+                <div class="input-wrapper">
+                    <div class="segment unit-full"></div>
+                </div>
             </div>
         </div>
     </div>
