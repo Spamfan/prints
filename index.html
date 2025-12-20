@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints (v3 beta)</title>
+    <title>Prints (v15 beta)</title>
     <style>
-        /* Base Reset */
+        /* --- BASE RESET --- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -14,342 +14,430 @@
 
         body {
             background-color: #525659;
-            display: flex;
-            justify-content: center;
             font-family: Arial, Helvetica, sans-serif;
             -webkit-print-color-adjust: exact;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        /* The Paper Sheet - Absolute Sizing */
-        .page {
+        #version-text {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.9em;
+            color: #ccc;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* --- DASHBOARD (SCREEN ONLY) --- */
+        #dashboard {
+            display: flex;
+            gap: 40px;
+            margin-top: 10vh;
+            padding: 20px;
+        }
+
+        .action-card {
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 4px solid white;
+        }
+
+        .action-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+            border-color: #1877f2;
+        }
+
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .preview-stage {
             width: 8.5in;
             height: 11in;
-            background-color: white;
-            display: grid;
-            grid-template-columns: 4.25in 4.25in; /* Strict half width */
-            grid-template-rows: 5.5in 5.5in;       /* Strict half height */
-            box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+            transform: scale(0.35);
+            transform-origin: top left;
+            pointer-events: none;
+            background: white;
         }
 
-        /* THE GRID & THE "PLUS" CUT LINES */
+        .doc-container { display: none; }
+
+        /* --- PAGE STRUCTURE --- */
+        .page {
+            width: 8.5in;
+            height: 10.9in;
+            background-color: white;
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* --- CUT LINES --- */
+        .cut-line-horiz {
+            position: absolute;
+            top: 5.5in; 
+            left: 0;
+            width: 100%;
+            border-top: 1px solid black;
+            z-index: 5;
+        }
+
+        .cut-line-vert {
+            position: absolute;
+            left: 4.25in;
+            top: 0.5in;
+            bottom: 0.5in;
+            border-left: 1px solid black;
+            z-index: 5;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        .half-sheet, .quadrant {
+            color: #000 !important;
+            font-size: 10pt !important;
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.4;
+        }
+        
+        /* --- TYPEWRITER MODE --- */
+        .row {
+            margin-bottom: 6px;
+            width: 100%;
+            white-space: nowrap; 
+        }
+
+        .label {
+            font-weight: bold;
+            margin-right: 4px;
+        }
+
+        .line {
+            display: inline-block;
+            border-bottom: 1px solid black;
+            height: 14px; 
+            vertical-align: bottom; 
+        }
+
+        .symbol {
+            display: inline-block;
+            font-weight: bold;
+            padding: 0 3px;
+            vertical-align: bottom;
+        }
+
+        .w-sm { width: 0.4in; }
+        .w-md { width: 0.8in; }
+        .w-lg { width: 1.5in; }
+        .w-xl { width: 2.0in; }
+        .w-xxl { width: 2.5in; }
+
+        /* --- DOC 1: TAKE HOME SHEET SPECIFICS --- */
+        .takehome-grid {
+            display: grid;
+            grid-template-rows: 50% 50%;
+            width: 100%;
+            height: 100%;
+            
+            /* v15 HOTFIX: Hide all text content */
+            opacity: 0; 
+        }
+
+        .half-sheet {
+            padding: 0.25in; 
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100%;
+        }
+
+        .th-alert {
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-top: 5px;
+            white-space: normal; 
+        }
+
+        .th-text-block {
+            margin-bottom: 6px;
+            white-space: normal;
+        }
+
+        .th-carrier {
+            margin-left: 20px;
+            margin-bottom: 8px;
+            white-space: normal;
+        }
+
+        .th-bold { font-weight: bold; }
+
+        .gap-sm { height: 10px; }
+        .gap-md { height: 20px; }
+        .gap-lg { height: 30px; }
+
+        /* --- DOC 2: INTAKE SHEET SPECIFICS --- */
+        .intake-grid {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100%;
+            height: 100%;
+        }
+
         .quadrant {
             padding: 0.5in;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             position: relative;
-            /* Ensure content doesn't overflow strict dimensions */
-            width: 4.25in;
-            height: 5.5in;
-        }
-
-        /* Top Left: Needs Right & Bottom borders */
-        .quadrant:nth-child(1) {
-            border-right: 1px solid black;
-            border-bottom: 1px solid black;
-        }
-
-        /* Top Right: Needs Bottom border only */
-        .quadrant:nth-child(2) {
-            border-bottom: 1px solid black;
-        }
-
-        /* Bottom Left: Needs Right border only */
-        .quadrant:nth-child(3) {
-            border-right: 1px solid black;
-        }
-
-        /* Bottom Right: No borders needed */
-        .quadrant:nth-child(4) {
-            /* clear */
-        }
-
-        /* FORM FIELD STYLES */
-        .field-row {
-            display: flex;
-            align-items: flex-end; /* Aligns text to the bottom underline */
-            margin-bottom: 24px;   /* Space between rows */
             width: 100%;
+            height: 100%;
         }
 
-        .label-group {
-            margin-right: 8px;
-            flex-shrink: 0;
-        }
+        .intake-row { margin-bottom: 24px; }
+        .intake-sub { font-size: 8pt; text-transform: uppercase; color: #444; display: block; margin-top: 2px; }
+        .intake-line { border-bottom: 1px solid black; width: 100%; height: 1px; display: block; margin-top: 14px; }
 
-        .label {
-            font-weight: bold;
-            font-size: 14px;
-            display: block;
-        }
 
-        .sub-label {
-            font-size: 9px;
-            text-transform: uppercase;
-            color: #444;
-            display: block;
-            margin-top: 2px;
-        }
-
-        /* THE PROPORTIONAL FLEX LOGIC (v3) */
-        
-        .input-wrapper {
-            flex-grow: 1; /* This takes up all remaining width after the label */
-            display: flex;
-            align-items: flex-end;
-        }
-
-        /* The segments themselves */
-        .segment {
-            border-bottom: 1px solid black;
-            height: 1px;
-            /* Flex-grow will be applied via specific classes below */
-        }
-
-        .spacer {
-            padding: 0 4px;
-            font-weight: bold;
-            line-height: 1;
-            flex-shrink: 0; /* Spacers never shrink */
-        }
-
-        /* Proportional Weights based on "Unit Spaces" */
-        .unit-2 { flex: 2; } /* 22% relative weight */
-        .unit-3 { flex: 3; } /* 33% relative weight */
-        .unit-4 { flex: 4; } /* 44% relative weight */
-        .unit-full { flex: 1; } /* 100% relative weight */
-
-        /* PRINT SETTINGS */
+        /* --- PRINT LOGIC --- */
         @media print {
-            body {
-                background: none;
-                display: block;
+            html, body {
+                height: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important; 
             }
-            .page {
-                box-shadow: none;
-                margin: 0;
-                width: 8.5in;
-                height: 11in;
-            }
+            
+            #dashboard, #version-text { display: none !important; }
+
+            body.printing-takehome #doc-takehome { display: block !important; }
+            body.printing-intake #doc-intake { display: block !important; }
+
             @page {
                 size: 8.5in 11in;
                 margin: 0;
+            }
+
+            .page {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 8.5in;
+                height: 100%;
+                margin: 0;
+                box-shadow: none;
+                overflow: hidden;
+                page-break-after: avoid;
+                break-after: avoid;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="page">
-        <!-- QUADRANT 1 (Top Left) -->
-        <div class="quadrant">
-            <!-- Field 1: Name -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">First Name:</span>
-                    <span class="sub-label">OPTIONAL</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
-            </div>
+    <div id="version-text">Prints (v15 beta - LINE ONLY)</div>
 
-            <!-- Field 2: Phone (3 - 3 - 4) -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Phone Number:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 3: SSN (3 - 2 - 4) -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">SSN:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-2"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 4: Email -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Email:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
+    <!-- DASHBOARD -->
+    <div id="dashboard">
+        <div class="action-card" onclick="printDoc('takehome')">
+            <div class="preview-stage" id="preview-takehome"></div>
+            <div class="card-overlay">
+                <div class="card-title">Take Home Sheet</div>
+                <div class="card-desc">Right Click / Tap to Print<br>(Line Only Mode)</div>
             </div>
         </div>
 
-        <!-- QUADRANT 2 (Top Right) -->
-        <div class="quadrant">
-            <!-- Field 1: Name -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">First Name:</span>
-                    <span class="sub-label">OPTIONAL</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
-            </div>
-
-            <!-- Field 2: Phone -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Phone Number:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 3: SSN -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">SSN:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-2"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 4: Email -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Email:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- QUADRANT 3 (Bottom Left) -->
-        <div class="quadrant">
-            <!-- Field 1: Name -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">First Name:</span>
-                    <span class="sub-label">OPTIONAL</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
-            </div>
-
-            <!-- Field 2: Phone -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Phone Number:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 3: SSN -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">SSN:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-2"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 4: Email -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Email:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- QUADRANT 4 (Bottom Right) -->
-        <div class="quadrant">
-            <!-- Field 1: Name -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">First Name:</span>
-                    <span class="sub-label">OPTIONAL</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
-            </div>
-
-            <!-- Field 2: Phone -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Phone Number:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 3: SSN -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">SSN:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-3"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-2"></div>
-                    <span class="spacer">-</span>
-                    <div class="segment unit-4"></div>
-                </div>
-            </div>
-
-            <!-- Field 4: Email -->
-            <div class="field-row">
-                <div class="label-group">
-                    <span class="label">Email:</span>
-                </div>
-                <div class="input-wrapper">
-                    <div class="segment unit-full"></div>
-                </div>
+        <div class="action-card" onclick="printDoc('intake')">
+            <div class="preview-stage" id="preview-intake"></div>
+            <div class="card-overlay">
+                <div class="card-title">Fill Out Sheet</div>
+                <div class="card-desc">Right Click / Tap to Print</div>
             </div>
         </div>
     </div>
 
+    <!-- HIDDEN PRINT CONTAINERS -->
+    <div id="doc-takehome" class="doc-container"></div>
+    <div id="doc-intake" class="doc-container"></div>
+
+    <script>
+        // --- TEMPLATES ---
+        
+        // 1. Take Home Sheet Template (Typewriter Mode)
+        const contentTakeHomeHalf = `
+            <div class="half-sheet">
+                <!-- Header Lines -->
+                <div class="row">
+                    <div class="line w-lg"></div>
+                    <span class="label">for</span>
+                    <span class="label" style="margin-left: 20px;">Your Number:</span>
+                    <div class="line w-sm"></div><span class="symbol">-</span><div class="line w-sm"></div><span class="symbol">-</span><div class="line w-sm"></div>
+                    <span class="label" style="margin-left: 20px;">Your</span>
+                    <div class="line w-sm"></div>
+                    <span class="label">PIN:</span>
+                    <div class="line w-md"></div>
+                </div>
+
+                <div class="row">
+                    <span class="label">Monthly bill: $</span>
+                    <div class="line w-sm"></div>
+                    <span class="symbol">+</span>
+                    <div class="line w-sm"></div>
+                    <span class="symbol">+</span>
+                    <div class="line w-sm"></div>
+                    <span class="symbol">= ~$</span>
+                    <div class="line w-sm"></div>
+                    <span class="label">/mo (___yr)</span>
+                </div>
+
+                <!-- Warning -->
+                <div class="th-alert">
+                    ⚠ IMPORTANT: BY END OF TOMORROW, Set up auto pay to discount-eligible <div class="line w-lg"></div> and paperless billing to email to keep your bill as low as possible. Do this in the <div class="line w-lg"></div> app or site, or call 611. Note that your app/site password is not the same as your account passcode/pin.
+                </div>
+
+                <!-- Carriers -->
+                <div class="th-carrier">
+                    <span class="th-bold">Verizon users:</span> use verizon.com/signin or My Verizon app > Create new account > Mobile (NOT prepaid) > make your user ID identical to the email given at Walmart (ie FakeEmail97@gmail.com) if possible.
+                </div>
+                <div class="th-carrier">
+                    <span class="th-bold">AT&T Users:</span> use att.com/my or My AT&T app > "Forgot password" > your user id is usually identical to the email you gave at Walmart (ie FakeEmail97@gmail.com).
+                </div>
+                <div class="th-carrier">
+                    <span class="th-bold">T-Mobile Users:</span> use t-mobile.com/signin or T-Life app > Sign up.
+                </div>
+
+                <div class="gap-md"></div>
+
+                <!-- Info -->
+                <div class="th-text-block">
+                    ℹ <b>Your first bill is due in ___ days or the date selected for auto pay.</b>
+                </div>
+                <div class="th-text-block">
+                    ℹ <b>Heads up!</b> Your first bill will be higher than normal, then reimbursed to compensate. You can request to accelerate your discount credits by contacting your carrier directly.
+                </div>
+
+                <div class="gap-sm"></div>
+
+                <!-- Estimates -->
+                <div class="row" style="display:flex; justify-content: space-between;">
+                    <div>Est. 1st bill = ~$<div class="line w-md"></div></div>
+                    <div>Est. 2nd bill = ~$<div class="line w-md"></div></div>
+                    <div>Est. 3rd bill = ~$<div class="line w-md"></div></div>
+                </div>
+
+                <div class="gap-lg"></div>
+
+                <div class="row">
+                    Overcharge of ~$<div class="line w-sm"></div> is reimbursed, usually by the end of bill #2 or #3.
+                </div>
+                
+                <div class="row th-carrier">
+                    NOTE: The activation fee(s) of $<div class="line w-sm"></div> is <i>not</i> automatically reimbursed.
+                </div>
+            </div>`;
+
+        const templateTakeHome = `
+            <div class="page">
+                <div class="takehome-grid">
+                    ${contentTakeHomeHalf}
+                    ${contentTakeHomeHalf}
+                </div>
+                <div class="cut-line-horiz"></div>
+            </div>`;
+
+        // 2. Intake Sheet Template (Legacy Grid, updated formatting)
+        const contentIntakeQuad = `
+            <div class="quadrant">
+                <div class="intake-row">
+                    <span class="label">First Name:</span><span class="intake-sub">OPTIONAL</span>
+                    <div class="intake-line"></div>
+                </div>
+                <div class="intake-row">
+                    <span class="label">Phone Number:</span>
+                    <div style="margin-top:14px; display:flex; align-items:flex-end;">
+                        <div class="line" style="flex:1"></div><span class="symbol">-</span>
+                        <div class="line" style="flex:1"></div><span class="symbol">-</span>
+                        <div class="line" style="flex:1.5"></div>
+                    </div>
+                </div>
+                <div class="intake-row">
+                    <span class="label">SSN:</span>
+                    <div style="margin-top:14px; display:flex; align-items:flex-end;">
+                        <div class="line" style="flex:1"></div><span class="symbol">-</span>
+                        <div class="line" style="flex:0.8"></div><span class="symbol">-</span>
+                        <div class="line" style="flex:1.5"></div>
+                    </div>
+                </div>
+                <div class="intake-row">
+                    <span class="label">Email:</span>
+                    <div class="intake-line"></div>
+                </div>
+            </div>`;
+
+        const templateIntake = `
+            <div class="page">
+                <div class="intake-grid">
+                    ${contentIntakeQuad}
+                    ${contentIntakeQuad}
+                    ${contentIntakeQuad}
+                    ${contentIntakeQuad}
+                </div>
+                <div class="cut-line-vert"></div>
+                <div class="cut-line-horiz" style="top: 5.45in;"></div>
+            </div>`;
+
+        // --- INITIALIZATION ---
+        document.getElementById('preview-takehome').innerHTML = templateTakeHome;
+        document.getElementById('doc-takehome').innerHTML = templateTakeHome;
+        document.getElementById('preview-intake').innerHTML = templateIntake;
+        document.getElementById('doc-intake').innerHTML = templateIntake;
+
+        // --- PRINT LOGIC ---
+        function printDoc(type) {
+            document.body.classList.add('printing-' + type);
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    const returnToDash = () => {
+                        document.body.classList.remove('printing-' + type);
+                        window.removeEventListener('click', returnToDash);
+                        window.removeEventListener('touchstart', returnToDash);
+                    };
+                    window.addEventListener('click', returnToDash);
+                    window.addEventListener('touchstart', returnToDash);
+                }, 1000);
+            }, 500);
+        }
+    </script>
+
 </body>
 </html>
-
