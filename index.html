@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints v18</title>
+    <title>Prints v19</title>
     <style>
         /* --- BASE RESET --- */
         * {
@@ -13,7 +13,8 @@
         }
 
         body {
-            background-color: #525659;
+            background-color: #ffffff;
+            color: #000000;
             font-family: Arial, Helvetica, sans-serif;
             -webkit-print-color-adjust: exact;
             display: flex;
@@ -27,7 +28,7 @@
             top: 10px;
             left: 10px;
             font-size: 0.9em;
-            color: #ccc;
+            color: #606770;
             font-weight: bold;
             pointer-events: none;
         }
@@ -35,65 +36,75 @@
         /* --- DASHBOARD GRID --- */
         #dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            max-width: 1400px;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 40px;
+            max-width: 1000px;
             margin-top: 8vh;
             padding: 20px;
             width: 100%;
+            justify-content: center;
+        }
+
+        .category-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .category-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #1c1e21;
         }
 
         .category-box {
             border-radius: 16px;
-            padding: 25px;
+            padding: 20px;
             display: flex;
-            flex-direction: column;
-            min-height: 450px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 280px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .box-blue { background-color: #00a4f3; }
         .box-gray { background-color: #e4e6eb; }
 
-        .category-title {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .box-blue .category-title { color: white; }
-        .box-gray .category-title { color: #1c1e21; }
-
         .cards-container {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
         }
 
         /* --- CARDS --- */
         .action-card {
-            width: 300px;
-            height: 400px;
+            width: 180px;
+            height: 233px;
             background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             position: relative;
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            border: 4px solid white;
+            border: 3px solid white;
             flex-shrink: 0;
         }
 
         .action-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
             border-color: #1877f2;
         }
 
         .legacy-card {
-            width: 240px;
-            height: 320px;
+            width: 140px;
+            height: 181px;
         }
 
         .card-overlay {
@@ -103,40 +114,41 @@
             width: 100%;
             background: rgba(0,0,0,0.8);
             color: white;
-            padding: 15px;
+            padding: 8px;
             text-align: center;
             z-index: 10;
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
-        .legacy-card .card-title { font-size: 15px; }
+        .legacy-card .card-title { font-size: 12px; }
 
         .card-desc {
-            font-size: 12px;
+            font-size: 10px;
             color: #ccc;
         }
 
         .preview-stage {
             width: 8.5in;
             height: 11in;
-            transform: scale(0.35);
+            transform: scale(0.22);
             transform-origin: top left;
             pointer-events: none;
             background: white;
             position: relative;
         }
 
-        .legacy-card .preview-stage { transform: scale(0.28); }
+        .legacy-card .preview-stage { transform: scale(0.17); }
 
         /* --- UNFINISHED GUIDES UI --- */
         #unlock-container {
             display: flex;
-            flex-grow: 1;
+            width: 100%;
+            height: 100%;
             align-items: center;
             justify-content: center;
         }
@@ -145,9 +157,9 @@
             background-color: transparent;
             color: #606770;
             border: 2px solid #606770;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
@@ -161,8 +173,10 @@
 
         #hidden-guides-container {
             display: none; /* Hidden by default */
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
         }
 
         /* --- MODAL --- */
@@ -179,13 +193,13 @@
 
         .modal-content {
             background: white;
-            padding: 30px;
-            border-radius: 12px;
+            padding: 25px;
+            border-radius: 10px;
             width: 90%;
-            max-width: 500px;
+            max-width: 450px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             text-align: left;
-            font-size: 16px;
+            font-size: 15px;
             line-height: 1.5;
             color: #1c1e21;
         }
@@ -195,17 +209,17 @@
         .modal-buttons {
             display: flex;
             justify-content: space-between;
-            margin-top: 25px;
-            gap: 15px;
+            margin-top: 20px;
+            gap: 10px;
         }
 
         .btn-modal {
-            padding: 10px 20px;
+            padding: 10px 16px;
             border: none;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         #btn-modal-okay {
@@ -307,76 +321,83 @@
 </head>
 <body>
 
-    <div id="version-text">Beta 18</div>
+    <div id="version-text">Beta 19</div>
 
     <!-- DASHBOARD GRID -->
     <div id="dashboard-grid">
         
         <!-- Top Left: Common Printouts -->
-        <div class="category-box box-blue">
+        <div class="category-container">
             <div class="category-title">Common printouts</div>
-            <div class="cards-container">
-                <div class="action-card" onclick="printDoc('combined')">
-                    <div class="preview-stage" id="preview-combined"></div>
-                    <div class="card-overlay">
-                        <div class="card-title">Take Home Sheet</div>
-                        <div class="card-desc">Right Click / Tap to Print</div>
+            <div class="category-box box-blue">
+                <div class="cards-container">
+                    <div class="action-card" onclick="printDoc('combined')">
+                        <div class="preview-stage" id="preview-combined"></div>
+                        <div class="card-overlay">
+                            <div class="card-title">Take Home Sheet</div>
+                            <div class="card-desc">Right Click / Tap to Print</div>
+                        </div>
                     </div>
-                </div>
-                <div class="action-card" onclick="printDoc('intake')">
-                    <div class="preview-stage" id="preview-intake"></div>
-                    <div class="card-overlay">
-                        <div class="card-title">Fill Out Sheet</div>
-                        <div class="card-desc">Right Click / Tap to Print</div>
+                    <div class="action-card" onclick="printDoc('intake')">
+                        <div class="preview-stage" id="preview-intake"></div>
+                        <div class="card-overlay">
+                            <div class="card-title">Fill Out Sheet</div>
+                            <div class="card-desc">Right Click / Tap to Print</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Top Right: Unfinished Guides -->
-        <div class="category-box box-gray">
+        <div class="category-container">
             <div class="category-title"><span style="color: #d93025;">!</span> unfinished: Customer guides</div>
-            
-            <!-- Soft Lock Button -->
-            <div id="unlock-container">
-                <button id="btn-unlock-guides">show unfinished documents</button>
-            </div>
+            <div class="category-box box-gray">
+                
+                <!-- Soft Lock Button -->
+                <div id="unlock-container">
+                    <button id="btn-unlock-guides">show unfinished documents</button>
+                </div>
 
-            <!-- Hidden Cards -->
-            <div id="hidden-guides-container" class="cards-container">
-                <div class="action-card" onclick="printDoc('vzwtrade')">
-                    <div class="preview-stage" id="preview-vzwtrade"></div>
-                    <div class="card-overlay">
-                        <div class="card-title">Verizon Trade in Guide</div>
-                        <div class="card-desc">Right Click / Tap to Print</div>
+                <!-- Hidden Cards -->
+                <div id="hidden-guides-container">
+                    <div class="action-card" onclick="printDoc('vzwtrade')">
+                        <div class="preview-stage" id="preview-vzwtrade"></div>
+                        <div class="card-overlay">
+                            <div class="card-title">Verizon Trade in Guide</div>
+                            <div class="card-desc">Right Click / Tap to Print</div>
+                        </div>
+                    </div>
+                    <div class="action-card" onclick="printDoc('iphonetransfer')">
+                        <div class="preview-stage" id="preview-iphonetransfer"></div>
+                        <div class="card-overlay">
+                            <div class="card-title">iPhone transfer guide</div>
+                            <div class="card-desc">Right Click / Tap to Print</div>
+                        </div>
                     </div>
                 </div>
-                <div class="action-card" onclick="printDoc('iphonetransfer')">
-                    <div class="preview-stage" id="preview-iphonetransfer"></div>
-                    <div class="card-overlay">
-                        <div class="card-title">iPhone transfer guide</div>
-                        <div class="card-desc">Right Click / Tap to Print</div>
-                    </div>
-                </div>
+
             </div>
         </div>
 
         <!-- Bottom Left: Other -->
-        <div class="category-box box-blue">
+        <div class="category-container">
             <div class="category-title">Other</div>
-            <div class="cards-container">
-                <div class="action-card legacy-card" onclick="printDoc('takehome')">
-                    <div class="preview-stage" id="preview-takehome"></div>
-                    <div class="card-overlay">
-                        <div class="card-title">half page cutting line</div>
-                        <div class="card-desc">Right Click / Tap to Print</div>
+            <div class="category-box box-blue">
+                <div class="cards-container">
+                    <div class="action-card legacy-card" onclick="printDoc('takehome')">
+                        <div class="preview-stage" id="preview-takehome"></div>
+                        <div class="card-overlay">
+                            <div class="card-title">half page cutting line</div>
+                            <div class="card-desc">Right Click / Tap to Print</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Bottom Right: Empty space to maintain grid alignment -->
-        <div></div>
+        <div class="category-container"></div>
 
     </div>
 
