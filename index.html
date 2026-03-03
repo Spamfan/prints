@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints v17</title>
+    <title>Prints v18</title>
     <style>
         /* --- BASE RESET --- */
         * {
@@ -32,27 +32,57 @@
             pointer-events: none;
         }
 
-        /* --- DASHBOARD (SCREEN ONLY) --- */
-        #dashboard {
-            display: flex;
-            gap: 40px;
-            margin-top: 10vh;
+        /* --- DASHBOARD GRID --- */
+        #dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1400px;
+            margin-top: 8vh;
             padding: 20px;
-            flex-wrap: wrap; 
-            justify-content: center;
+            width: 100%;
         }
 
+        .category-box {
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            min-height: 450px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .box-blue { background-color: #00a4f3; }
+        .box-gray { background-color: #e4e6eb; }
+
+        .category-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .box-blue .category-title { color: white; }
+        .box-gray .category-title { color: #1c1e21; }
+
+        .cards-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* --- CARDS --- */
         .action-card {
             width: 300px;
             height: 400px;
             background-color: white;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             position: relative;
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             border: 4px solid white;
+            flex-shrink: 0;
         }
 
         .action-card:hover {
@@ -61,11 +91,9 @@
             border-color: #1877f2;
         }
 
-        /* Legacy Card Scaling (Failsafe Module) */
         .legacy-card {
             width: 240px;
             height: 320px;
-            align-self: center; /* Centers it vertically next to the larger cards */
         }
 
         .card-overlay {
@@ -86,10 +114,7 @@
             margin-bottom: 4px;
         }
 
-        /* Smaller title for legacy card */
-        .legacy-card .card-title {
-            font-size: 15px;
-        }
+        .legacy-card .card-title { font-size: 15px; }
 
         .card-desc {
             font-size: 12px;
@@ -106,14 +131,98 @@
             position: relative;
         }
 
-        /* Scale down the preview stage inside the smaller legacy card */
-        .legacy-card .preview-stage {
-            transform: scale(0.28);
+        .legacy-card .preview-stage { transform: scale(0.28); }
+
+        /* --- UNFINISHED GUIDES UI --- */
+        #unlock-container {
+            display: flex;
+            flex-grow: 1;
+            align-items: center;
+            justify-content: center;
         }
 
+        #btn-unlock-guides {
+            background-color: transparent;
+            color: #606770;
+            border: 2px solid #606770;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #btn-unlock-guides:hover {
+            background-color: #dadddf;
+            color: #1c1e21;
+            border-color: #1c1e21;
+        }
+
+        #hidden-guides-container {
+            display: none; /* Hidden by default */
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* --- MODAL --- */
+        #warning-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: left;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #1c1e21;
+        }
+
+        .modal-content strong { color: #d93025; }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            gap: 15px;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #btn-modal-okay {
+            background-color: #e4e6eb;
+            color: #1c1e21;
+        }
+        #btn-modal-okay:hover { background-color: #dadddf; }
+
+        #btn-modal-show {
+            background-color: #d93025;
+            color: white;
+        }
+        #btn-modal-show:hover { background-color: #b3241c; }
+
+        /* --- PRINT STYLES --- */
         .doc-container { display: none; }
 
-        /* --- PAGE STRUCTURE --- */
         .page {
             width: 8.5in;
             height: 10.9in;
@@ -122,7 +231,6 @@
             position: relative;
         }
 
-        /* --- CUT LINES --- */
         .cut-line-horiz {
             position: absolute;
             top: 5.5in; 
@@ -141,114 +249,26 @@
             z-index: 5;
         }
 
-        /* --- TYPOGRAPHY --- */
-        .half-sheet, .quadrant {
-            color: #000 !important;
-            font-size: 10pt !important;
-            font-family: Arial, Helvetica, sans-serif;
-            line-height: 1.4;
-        }
-        
-        /* --- TYPEWRITER MODE --- */
-        .row {
-            margin-bottom: 6px;
-            width: 100%;
-            white-space: nowrap; 
-        }
-
-        .label {
-            font-weight: bold;
-            margin-right: 4px;
-        }
-
-        .line {
-            display: inline-block;
-            border-bottom: 1px solid black;
-            height: 14px; 
-            vertical-align: bottom; 
-        }
-
-        .symbol {
-            display: inline-block;
-            font-weight: bold;
-            padding: 0 3px;
-            vertical-align: bottom;
-        }
-
-        .w-sm { width: 0.4in; }
-        .w-md { width: 0.8in; }
-        .w-lg { width: 1.5in; }
-        .w-xl { width: 2.0in; }
-        .w-xxl { width: 2.5in; }
-
-        /* --- DOC 1: TAKE HOME SHEET SPECIFICS --- */
-        .takehome-grid {
-            display: grid;
-            grid-template-rows: 50% 50%;
-            width: 100%;
-            height: 100%;
-            
-            /* v15 HOTFIX: Hide all text content */
-            opacity: 0; 
-        }
-
-        .half-sheet {
-            padding: 0.25in; 
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            height: 100%;
-        }
-
-        .th-alert {
-            font-weight: bold;
-            margin-bottom: 10px;
-            margin-top: 5px;
-            white-space: normal; 
-        }
-
-        .th-text-block {
-            margin-bottom: 6px;
-            white-space: normal;
-        }
-
-        .th-carrier {
-            margin-left: 20px;
-            margin-bottom: 8px;
-            white-space: normal;
-        }
-
+        /* Core Typography for legacy templates */
+        .half-sheet, .quadrant { color: #000 !important; font-size: 10pt !important; font-family: Arial, Helvetica, sans-serif; line-height: 1.4; }
+        .row { margin-bottom: 6px; width: 100%; white-space: nowrap; }
+        .label { font-weight: bold; margin-right: 4px; }
+        .line { display: inline-block; border-bottom: 1px solid black; height: 14px; vertical-align: bottom; }
+        .symbol { display: inline-block; font-weight: bold; padding: 0 3px; vertical-align: bottom; }
+        .w-sm { width: 0.4in; } .w-md { width: 0.8in; } .w-lg { width: 1.5in; }
+        .takehome-grid { display: grid; grid-template-rows: 50% 50%; width: 100%; height: 100%; opacity: 0; }
+        .half-sheet { padding: 0.25in; display: flex; flex-direction: column; position: relative; height: 100%; }
+        .th-alert { font-weight: bold; margin-bottom: 10px; margin-top: 5px; white-space: normal; }
+        .th-text-block { margin-bottom: 6px; white-space: normal; }
+        .th-carrier { margin-left: 20px; margin-bottom: 8px; white-space: normal; }
         .th-bold { font-weight: bold; }
-
-        .gap-sm { height: 10px; }
-        .gap-md { height: 20px; }
-        .gap-lg { height: 30px; }
-
-        /* --- DOC 2: INTAKE SHEET SPECIFICS --- */
-        .intake-grid {
-            display: grid;
-            grid-template-columns: 50% 50%;
-            grid-template-rows: 50% 50%;
-            width: 100%;
-            height: 100%;
-        }
-
-        .quadrant {
-            padding: 0.5in;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
+        .gap-sm { height: 10px; } .gap-md { height: 20px; } .gap-lg { height: 30px; }
+        .intake-grid { display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; width: 100%; height: 100%; }
+        .quadrant { padding: 0.5in; display: flex; flex-direction: column; justify-content: flex-start; position: relative; width: 100%; height: 100%; }
         .intake-row { margin-bottom: 24px; }
         .intake-sub { font-size: 8pt; text-transform: uppercase; color: #444; display: block; margin-top: 2px; }
         .intake-line { border-bottom: 1px solid black; width: 100%; height: 1px; display: block; margin-top: 14px; }
 
-
-        /* --- PRINT LOGIC --- */
         @media print {
             html, body {
                 height: 100%;
@@ -257,11 +277,13 @@
                 overflow: hidden !important; 
             }
             
-            #dashboard, #version-text { display: none !important; }
+            #dashboard-grid, #version-text, #warning-modal { display: none !important; }
 
             body.printing-takehome #doc-takehome { display: block !important; }
             body.printing-intake #doc-intake { display: block !important; }
             body.printing-combined #doc-combined { display: block !important; }
+            body.printing-vzwtrade #doc-vzwtrade { display: block !important; }
+            body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
 
             @page {
                 size: 8.5in 11in;
@@ -273,7 +295,7 @@
                 top: 0;
                 left: 0;
                 width: 8.5in;
-                height: 10.8in !important; /* LDD Ghost Page Fix */
+                height: 10.8in !important; 
                 margin: 0;
                 box-shadow: none;
                 overflow: hidden;
@@ -285,34 +307,86 @@
 </head>
 <body>
 
-    <div id="version-text">Beta 17</div>
+    <div id="version-text">Beta 18</div>
 
-    <!-- DASHBOARD -->
-    <div id="dashboard">
-        <!-- Box 1: Combined THS (New Primary Module) -->
-        <div class="action-card" onclick="printDoc('combined')">
-            <div class="preview-stage" id="preview-combined"></div>
-            <div class="card-overlay">
-                <div class="card-title">Take Home Sheet</div>
-                <div class="card-desc">Right Click / Tap to Print</div>
+    <!-- DASHBOARD GRID -->
+    <div id="dashboard-grid">
+        
+        <!-- Top Left: Common Printouts -->
+        <div class="category-box box-blue">
+            <div class="category-title">Common printouts</div>
+            <div class="cards-container">
+                <div class="action-card" onclick="printDoc('combined')">
+                    <div class="preview-stage" id="preview-combined"></div>
+                    <div class="card-overlay">
+                        <div class="card-title">Take Home Sheet</div>
+                        <div class="card-desc">Right Click / Tap to Print</div>
+                    </div>
+                </div>
+                <div class="action-card" onclick="printDoc('intake')">
+                    <div class="preview-stage" id="preview-intake"></div>
+                    <div class="card-overlay">
+                        <div class="card-title">Fill Out Sheet</div>
+                        <div class="card-desc">Right Click / Tap to Print</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Box 2: Intake Sheet -->
-        <div class="action-card" onclick="printDoc('intake')">
-            <div class="preview-stage" id="preview-intake"></div>
-            <div class="card-overlay">
-                <div class="card-title">Fill Out Sheet</div>
-                <div class="card-desc">Right Click / Tap to Print</div>
+        <!-- Top Right: Unfinished Guides -->
+        <div class="category-box box-gray">
+            <div class="category-title"><span style="color: #d93025;">!</span> unfinished: Customer guides</div>
+            
+            <!-- Soft Lock Button -->
+            <div id="unlock-container">
+                <button id="btn-unlock-guides">show unfinished documents</button>
+            </div>
+
+            <!-- Hidden Cards -->
+            <div id="hidden-guides-container" class="cards-container">
+                <div class="action-card" onclick="printDoc('vzwtrade')">
+                    <div class="preview-stage" id="preview-vzwtrade"></div>
+                    <div class="card-overlay">
+                        <div class="card-title">Verizon Trade in Guide</div>
+                        <div class="card-desc">Right Click / Tap to Print</div>
+                    </div>
+                </div>
+                <div class="action-card" onclick="printDoc('iphonetransfer')">
+                    <div class="preview-stage" id="preview-iphonetransfer"></div>
+                    <div class="card-overlay">
+                        <div class="card-title">iPhone transfer guide</div>
+                        <div class="card-desc">Right Click / Tap to Print</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Box 3: Original THS (Line Only / Legacy Failsafe) -->
-        <div class="action-card legacy-card" onclick="printDoc('takehome')">
-            <div class="preview-stage" id="preview-takehome"></div>
-            <div class="card-overlay">
-                <div class="card-title">Horizontal line (legacy)</div>
-                <div class="card-desc">Right Click / Tap to Print<br>(Line Only Mode)</div>
+        <!-- Bottom Left: Other -->
+        <div class="category-box box-blue">
+            <div class="category-title">Other</div>
+            <div class="cards-container">
+                <div class="action-card legacy-card" onclick="printDoc('takehome')">
+                    <div class="preview-stage" id="preview-takehome"></div>
+                    <div class="card-overlay">
+                        <div class="card-title">half page cutting line</div>
+                        <div class="card-desc">Right Click / Tap to Print</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Right: Empty space to maintain grid alignment -->
+        <div></div>
+
+    </div>
+
+    <!-- WARNING MODAL -->
+    <div id="warning-modal">
+        <div class="modal-content">
+            <p><strong>Heads up!</strong><br>The Verizon trade in and iPhone transfer guides are unfinished documents and could easily provide <strong>inaccurate or damaging steps or information.</strong> Using these guides aren't advised until the documents have been properly rewritten with accurate information.</p>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-modal-okay">okay</button>
+                <button class="btn-modal" id="btn-modal-show">show unfinished documents anyway</button>
             </div>
         </div>
     </div>
@@ -321,139 +395,83 @@
     <div id="doc-takehome" class="doc-container"></div>
     <div id="doc-intake" class="doc-container"></div>
     <div id="doc-combined" class="doc-container"></div>
+    <div id="doc-vzwtrade" class="doc-container"></div>
+    <div id="doc-iphonetransfer" class="doc-container"></div>
 
     <script>
+        // --- MODAL LOGIC ---
+        const btnUnlock = document.getElementById('btn-unlock-guides');
+        const modal = document.getElementById('warning-modal');
+        const btnOkay = document.getElementById('btn-modal-okay');
+        const btnShow = document.getElementById('btn-modal-show');
+        const unlockContainer = document.getElementById('unlock-container');
+        const hiddenGuides = document.getElementById('hidden-guides-container');
+
+        btnUnlock.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        btnOkay.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        btnShow.addEventListener('click', () => {
+            modal.style.display = 'none';
+            unlockContainer.style.display = 'none';
+            hiddenGuides.style.display = 'flex';
+        });
+
         // --- TEMPLATES ---
         
-        // 1. Take Home Sheet Template (Typewriter Mode - Line Only)
+        // 1. Line Only Legacy
         const contentTakeHomeHalf = `
             <div class="half-sheet">
-                <!-- Header Lines -->
                 <div class="row">
-                    <div class="line w-lg"></div>
-                    <span class="label">for</span>
-                    <span class="label" style="margin-left: 20px;">Your Number:</span>
+                    <div class="line w-lg"></div><span class="label">for</span><span class="label" style="margin-left: 20px;">Your Number:</span>
                     <div class="line w-sm"></div><span class="symbol">-</span><div class="line w-sm"></div><span class="symbol">-</span><div class="line w-sm"></div>
-                    <span class="label" style="margin-left: 20px;">Your</span>
-                    <div class="line w-sm"></div>
-                    <span class="label">PIN:</span>
-                    <div class="line w-md"></div>
+                    <span class="label" style="margin-left: 20px;">Your</span><div class="line w-sm"></div><span class="label">PIN:</span><div class="line w-md"></div>
                 </div>
-
                 <div class="row">
-                    <span class="label">Monthly bill: $</span>
-                    <div class="line w-sm"></div>
-                    <span class="symbol">+</span>
-                    <div class="line w-sm"></div>
-                    <span class="symbol">+</span>
-                    <div class="line w-sm"></div>
-                    <span class="symbol">= ~$</span>
-                    <div class="line w-sm"></div>
-                    <span class="label">/mo (___yr)</span>
+                    <span class="label">Monthly bill: $</span><div class="line w-sm"></div><span class="symbol">+</span><div class="line w-sm"></div>
+                    <span class="symbol">+</span><div class="line w-sm"></div><span class="symbol">= ~$</span><div class="line w-sm"></div><span class="label">/mo (___yr)</span>
                 </div>
-
-                <!-- Warning -->
-                <div class="th-alert">
-                    ⚠ IMPORTANT: BY END OF TOMORROW, Set up auto pay to discount-eligible <div class="line w-lg"></div> and paperless billing to email to keep your bill as low as possible. Do this in the <div class="line w-lg"></div> app or site, or call 611. Note that your app/site password is not the same as your account passcode/pin.
-                </div>
-
-                <!-- Carriers -->
-                <div class="th-carrier">
-                    <span class="th-bold">Verizon users:</span> use verizon.com/signin or My Verizon app > Create new account > Mobile (NOT prepaid) > make your user ID identical to the email given at Walmart (ie FakeEmail97@gmail.com) if possible.
-                </div>
-                <div class="th-carrier">
-                    <span class="th-bold">AT&T Users:</span> use att.com/my or My AT&T app > "Forgot password" > your user id is usually identical to the email you gave at Walmart (ie FakeEmail97@gmail.com).
-                </div>
-                <div class="th-carrier">
-                    <span class="th-bold">T-Mobile Users:</span> use t-mobile.com/signin or T-Life app > Sign up.
-                </div>
-
+                <div class="th-alert">⚠ IMPORTANT: BY END OF TOMORROW, Set up auto pay to discount-eligible <div class="line w-lg"></div> and paperless billing to email to keep your bill as low as possible. Do this in the <div class="line w-lg"></div> app or site, or call 611. Note that your app/site password is not the same as your account passcode/pin.</div>
+                <div class="th-carrier"><span class="th-bold">Verizon users:</span> use verizon.com/signin or My Verizon app > Create new account > Mobile (NOT prepaid) > make your user ID identical to the email given at Walmart (ie FakeEmail97@gmail.com) if possible.</div>
+                <div class="th-carrier"><span class="th-bold">AT&T Users:</span> use att.com/my or My AT&T app > "Forgot password" > your user id is usually identical to the email you gave at Walmart (ie FakeEmail97@gmail.com).</div>
+                <div class="th-carrier"><span class="th-bold">T-Mobile Users:</span> use t-mobile.com/signin or T-Life app > Sign up.</div>
                 <div class="gap-md"></div>
-
-                <!-- Info -->
-                <div class="th-text-block">
-                    ℹ <b>Your first bill is due in ___ days or the date selected for auto pay.</b>
-                </div>
-                <div class="th-text-block">
-                    ℹ <b>Heads up!</b> Your first bill will be higher than normal, then reimbursed to compensate. You can request to accelerate your discount credits by contacting your carrier directly.
-                </div>
-
+                <div class="th-text-block">ℹ <b>Your first bill is due in ___ days or the date selected for auto pay.</b></div>
+                <div class="th-text-block">ℹ <b>Heads up!</b> Your first bill will be higher than normal, then reimbursed to compensate. You can request to accelerate your discount credits by contacting your carrier directly.</div>
                 <div class="gap-sm"></div>
-
-                <!-- Estimates -->
                 <div class="row" style="display:flex; justify-content: space-between;">
                     <div>Est. 1st bill = ~$<div class="line w-md"></div></div>
                     <div>Est. 2nd bill = ~$<div class="line w-md"></div></div>
                     <div>Est. 3rd bill = ~$<div class="line w-md"></div></div>
                 </div>
-
                 <div class="gap-lg"></div>
-
-                <div class="row">
-                    Overcharge of ~$<div class="line w-sm"></div> is reimbursed, usually by the end of bill #2 or #3.
-                </div>
-                
-                <div class="row th-carrier">
-                    NOTE: The activation fee(s) of $<div class="line w-sm"></div> is <i>not</i> automatically reimbursed.
-                </div>
+                <div class="row">Overcharge of ~$<div class="line w-sm"></div> is reimbursed, usually by the end of bill #2 or #3.</div>
+                <div class="row th-carrier">NOTE: The activation fee(s) of $<div class="line w-sm"></div> is <i>not</i> automatically reimbursed.</div>
             </div>`;
+        const templateTakeHome = `<div class="page"><div class="takehome-grid">${contentTakeHomeHalf}${contentTakeHomeHalf}</div><div class="cut-line-horiz"></div></div>`;
 
-        const templateTakeHome = `
-            <div class="page">
-                <div class="takehome-grid">
-                    ${contentTakeHomeHalf}
-                    ${contentTakeHomeHalf}
-                </div>
-                <div class="cut-line-horiz"></div>
-            </div>`;
-
-        // 2. Intake Sheet Template (Legacy Grid, updated formatting)
+        // 2. Intake Sheet
         const contentIntakeQuad = `
             <div class="quadrant">
-                <div class="intake-row">
-                    <span class="label">First Name:</span><span class="intake-sub">OPTIONAL</span>
-                    <div class="intake-line"></div>
-                </div>
-                <div class="intake-row">
-                    <span class="label">Phone Number:</span>
-                    <div style="margin-top:14px; display:flex; align-items:flex-end;">
-                        <div class="line" style="flex:1"></div><span class="symbol">-</span>
-                        <div class="line" style="flex:1"></div><span class="symbol">-</span>
-                        <div class="line" style="flex:1.5"></div>
-                    </div>
-                </div>
-                <div class="intake-row">
-                    <span class="label">SSN:</span>
-                    <div style="margin-top:14px; display:flex; align-items:flex-end;">
-                        <div class="line" style="flex:1"></div><span class="symbol">-</span>
-                        <div class="line" style="flex:0.8"></div><span class="symbol">-</span>
-                        <div class="line" style="flex:1.5"></div>
-                    </div>
-                </div>
-                <div class="intake-row">
-                    <span class="label">Email:</span>
-                    <div class="intake-line"></div>
-                </div>
+                <div class="intake-row"><span class="label">First Name:</span><span class="intake-sub">OPTIONAL</span><div class="intake-line"></div></div>
+                <div class="intake-row"><span class="label">Phone Number:</span><div style="margin-top:14px; display:flex; align-items:flex-end;"><div class="line" style="flex:1"></div><span class="symbol">-</span><div class="line" style="flex:1"></div><span class="symbol">-</span><div class="line" style="flex:1.5"></div></div></div>
+                <div class="intake-row"><span class="label">SSN:</span><div style="margin-top:14px; display:flex; align-items:flex-end;"><div class="line" style="flex:1"></div><span class="symbol">-</span><div class="line" style="flex:0.8"></div><span class="symbol">-</span><div class="line" style="flex:1.5"></div></div></div>
+                <div class="intake-row"><span class="label">Email:</span><div class="intake-line"></div></div>
             </div>`;
+        const templateIntake = `<div class="page"><div class="intake-grid">${contentIntakeQuad}${contentIntakeQuad}${contentIntakeQuad}${contentIntakeQuad}</div><div class="cut-line-vert"></div><div class="cut-line-horiz" style="top: 5.45in;"></div></div>`;
 
-        const templateIntake = `
-            <div class="page">
-                <div class="intake-grid">
-                    ${contentIntakeQuad}
-                    ${contentIntakeQuad}
-                    ${contentIntakeQuad}
-                    ${contentIntakeQuad}
-                </div>
-                <div class="cut-line-vert"></div>
-                <div class="cut-line-horiz" style="top: 5.45in;"></div>
-            </div>`;
+        // 3. Combined THS
+        const templateCombined = `<div class="page"><img src="https://i.imgur.com/qpnpyBd.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"><div class="cut-line-horiz" style="z-index: 5;"></div></div>`;
 
-        // 3. Combined Sheet Template (Primary Box 1)
-        const templateCombined = `
-            <div class="page">
-                <img src="https://i.imgur.com/qpnpyBd.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;">
-                <div class="cut-line-horiz" style="z-index: 5;"></div>
-            </div>`;
+        // 4. VZW Trade In
+        const templateVzwTrade = `<div class="page"><img src="https://i.imgur.com/1vBTDLU.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
+
+        // 5. iPhone Transfer
+        const templateIphoneTransfer = `<div class="page"><img src="https://i.imgur.com/TVFeWTr.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
         // --- INITIALIZATION ---
         document.getElementById('preview-takehome').innerHTML = templateTakeHome;
@@ -464,6 +482,12 @@
         
         document.getElementById('preview-combined').innerHTML = templateCombined;
         document.getElementById('doc-combined').innerHTML = templateCombined;
+
+        document.getElementById('preview-vzwtrade').innerHTML = templateVzwTrade;
+        document.getElementById('doc-vzwtrade').innerHTML = templateVzwTrade;
+
+        document.getElementById('preview-iphonetransfer').innerHTML = templateIphoneTransfer;
+        document.getElementById('doc-iphonetransfer').innerHTML = templateIphoneTransfer;
 
         // --- PRINT LOGIC ---
         function printDoc(type) {
