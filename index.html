@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints v19</title>
+    <title>Prints v20</title>
     <style>
         /* --- BASE RESET --- */
         * {
@@ -33,25 +33,32 @@
             pointer-events: none;
         }
 
-        /* --- DASHBOARD GRID --- */
-        #dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        /* --- DASHBOARD LAYOUT (TWO-ROW FLEXBOX) --- */
+        #dashboard {
+            display: flex;
+            flex-direction: column;
             gap: 40px;
-            max-width: 1000px;
+            max-width: 1200px;
             margin-top: 8vh;
             padding: 20px;
             width: 100%;
-            justify-content: center;
+            align-items: flex-start; /* Left alignment */
+        }
+
+        .dashboard-row {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            width: 100%;
         }
 
         .category-container {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            width: 100%;
         }
 
+        /* --- TYPOGRAPHY & HIERARCHY --- */
         .category-title {
             font-size: 24px;
             font-weight: bold;
@@ -59,18 +66,24 @@
             color: #1c1e21;
         }
 
+        /* Secondary Row Overrides */
+        .secondary-category .category-title {
+            font-size: 20px;
+            font-weight: normal;
+            color: #606770;
+        }
+
+        /* --- BOXES --- */
         .category-box {
             border-radius: 16px;
             padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            min-height: 280px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .box-blue { background-color: #00a4f3; }
+        .box-blue { background-color: #1bb3e9; } /* v20 New Blue */
         .box-gray { background-color: #e4e6eb; }
 
         .cards-container {
@@ -78,10 +91,9 @@
             gap: 15px;
             flex-wrap: wrap;
             justify-content: center;
-            width: 100%;
         }
 
-        /* --- CARDS --- */
+        /* --- CARDS (PRIMARY & SECONDARY) --- */
         .action-card {
             width: 180px;
             height: 233px;
@@ -102,9 +114,10 @@
             border-color: #1877f2;
         }
 
-        .legacy-card {
-            width: 140px;
-            height: 181px;
+        /* Shrunk cards for the bottom row */
+        .secondary-card {
+            width: 150px;
+            height: 194px;
         }
 
         .card-overlay {
@@ -125,7 +138,7 @@
             margin-bottom: 2px;
         }
 
-        .legacy-card .card-title { font-size: 12px; }
+        .secondary-card .card-title { font-size: 12px; }
 
         .card-desc {
             font-size: 10px;
@@ -142,7 +155,7 @@
             position: relative;
         }
 
-        .legacy-card .preview-stage { transform: scale(0.17); }
+        .secondary-card .preview-stage { transform: scale(0.18); }
 
         /* --- UNFINISHED GUIDES UI --- */
         #unlock-container {
@@ -151,6 +164,7 @@
             height: 100%;
             align-items: center;
             justify-content: center;
+            padding: 40px; /* Gives the gray box some body when empty */
         }
 
         #btn-unlock-guides {
@@ -176,7 +190,6 @@
             gap: 15px;
             flex-wrap: wrap;
             justify-content: center;
-            width: 100%;
         }
 
         /* --- MODAL --- */
@@ -204,7 +217,7 @@
             color: #1c1e21;
         }
 
-        .modal-content strong { color: #d93025; }
+        /* Removed the red color override here per v20 spec, bold text defaults to black */
 
         .modal-buttons {
             display: flex;
@@ -291,13 +304,14 @@
                 overflow: hidden !important; 
             }
             
-            #dashboard-grid, #version-text, #warning-modal { display: none !important; }
+            #dashboard, #version-text, #warning-modal { display: none !important; }
 
             body.printing-takehome #doc-takehome { display: block !important; }
             body.printing-intake #doc-intake { display: block !important; }
             body.printing-combined #doc-combined { display: block !important; }
             body.printing-vzwtrade #doc-vzwtrade { display: block !important; }
             body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
+            body.printing-warpcalls #doc-warpcalls { display: block !important; }
 
             @page {
                 size: 8.5in 11in;
@@ -321,83 +335,95 @@
 </head>
 <body>
 
-    <div id="version-text">Beta 19</div>
+    <div id="version-text">Beta 20</div>
 
-    <!-- DASHBOARD GRID -->
-    <div id="dashboard-grid">
+    <!-- DASHBOARD LAYOUT -->
+    <div id="dashboard">
         
-        <!-- Top Left: Common Printouts -->
-        <div class="category-container">
-            <div class="category-title">Common printouts</div>
-            <div class="category-box box-blue">
-                <div class="cards-container">
-                    <div class="action-card" onclick="printDoc('combined')">
-                        <div class="preview-stage" id="preview-combined"></div>
-                        <div class="card-overlay">
-                            <div class="card-title">Take Home Sheet</div>
-                            <div class="card-desc">Right Click / Tap to Print</div>
+        <!-- ROW 1: PRIMARY DOCUMENTS -->
+        <div class="dashboard-row">
+            <div class="category-container">
+                <div class="category-title">Common printouts</div>
+                <div class="category-box box-blue">
+                    <div class="cards-container">
+                        <div class="action-card" onclick="printDoc('combined')">
+                            <div class="preview-stage" id="preview-combined"></div>
+                            <div class="card-overlay">
+                                <div class="card-title">Take Home Sheet</div>
+                                <div class="card-desc">Right Click / Tap to Print</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="action-card" onclick="printDoc('intake')">
-                        <div class="preview-stage" id="preview-intake"></div>
-                        <div class="card-overlay">
-                            <div class="card-title">Fill Out Sheet</div>
-                            <div class="card-desc">Right Click / Tap to Print</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Right: Unfinished Guides -->
-        <div class="category-container">
-            <div class="category-title"><span style="color: #d93025;">!</span> unfinished: Customer guides</div>
-            <div class="category-box box-gray">
-                
-                <!-- Soft Lock Button -->
-                <div id="unlock-container">
-                    <button id="btn-unlock-guides">show unfinished documents</button>
-                </div>
-
-                <!-- Hidden Cards -->
-                <div id="hidden-guides-container">
-                    <div class="action-card" onclick="printDoc('vzwtrade')">
-                        <div class="preview-stage" id="preview-vzwtrade"></div>
-                        <div class="card-overlay">
-                            <div class="card-title">Verizon Trade in Guide</div>
-                            <div class="card-desc">Right Click / Tap to Print</div>
-                        </div>
-                    </div>
-                    <div class="action-card" onclick="printDoc('iphonetransfer')">
-                        <div class="preview-stage" id="preview-iphonetransfer"></div>
-                        <div class="card-overlay">
-                            <div class="card-title">iPhone transfer guide</div>
-                            <div class="card-desc">Right Click / Tap to Print</div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Bottom Left: Other -->
-        <div class="category-container">
-            <div class="category-title">Other</div>
-            <div class="category-box box-blue">
-                <div class="cards-container">
-                    <div class="action-card legacy-card" onclick="printDoc('takehome')">
-                        <div class="preview-stage" id="preview-takehome"></div>
-                        <div class="card-overlay">
-                            <div class="card-title">half page cutting line</div>
-                            <div class="card-desc">Right Click / Tap to Print</div>
+                        <div class="action-card" onclick="printDoc('intake')">
+                            <div class="preview-stage" id="preview-intake"></div>
+                            <div class="card-overlay">
+                                <div class="card-title">Fill Out Sheet</div>
+                                <div class="card-desc">Right Click / Tap to Print</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Right: Empty space to maintain grid alignment -->
-        <div class="category-container"></div>
+        <!-- ROW 2: SECONDARY DOCUMENTS -->
+        <div class="dashboard-row">
+            
+            <!-- Bottom Left: Other -->
+            <div class="category-container secondary-category">
+                <div class="category-title">Other</div>
+                <div class="category-box box-gray">
+                    <div class="cards-container">
+                        <div class="action-card secondary-card" onclick="printDoc('takehome')">
+                            <div class="preview-stage" id="preview-takehome"></div>
+                            <div class="card-overlay">
+                                <div class="card-title">half page cutting line</div>
+                                <div class="card-desc">Right Click / Tap to Print</div>
+                            </div>
+                        </div>
+                        <!-- New WARP Calls Guide -->
+                        <div class="action-card secondary-card" onclick="printDoc('warpcalls')">
+                            <div class="preview-stage" id="preview-warpcalls"></div>
+                            <div class="card-overlay">
+                                <div class="card-title">Guide for WARP calls</div>
+                                <div class="card-desc">Right Click / Tap to Print</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Right: Unfinished Guides -->
+            <div class="category-container secondary-category">
+                <div class="category-title">Unfinished customer guides</div>
+                <div class="category-box box-gray">
+                    
+                    <!-- Soft Lock Button -->
+                    <div id="unlock-container">
+                        <button id="btn-unlock-guides">show unfinished documents</button>
+                    </div>
+
+                    <!-- Hidden Cards -->
+                    <div id="hidden-guides-container" class="cards-container">
+                        <div class="action-card secondary-card" onclick="printDoc('vzwtrade')">
+                            <div class="preview-stage" id="preview-vzwtrade"></div>
+                            <div class="card-overlay">
+                                <div class="card-title">Verizon Trade in Guide</div>
+                                <div class="card-desc">Right Click / Tap to Print</div>
+                            </div>
+                        </div>
+                        <div class="action-card secondary-card" onclick="printDoc('iphonetransfer')">
+                            <div class="preview-stage" id="preview-iphonetransfer"></div>
+                            <div class="card-overlay">
+                                <div class="card-title">iPhone transfer guide</div>
+                                <div class="card-desc">Right Click / Tap to Print</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div> <!-- End Row 2 -->
 
     </div>
 
@@ -418,6 +444,7 @@
     <div id="doc-combined" class="doc-container"></div>
     <div id="doc-vzwtrade" class="doc-container"></div>
     <div id="doc-iphonetransfer" class="doc-container"></div>
+    <div id="doc-warpcalls" class="doc-container"></div>
 
     <script>
         // --- MODAL LOGIC ---
@@ -494,6 +521,10 @@
         // 5. iPhone Transfer
         const templateIphoneTransfer = `<div class="page"><img src="https://i.imgur.com/TVFeWTr.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
+        // 6. WARP Calls Guide
+        const templateWarpCalls = `<div class="page"><img src="https://i.imgur.com/0YAC03J.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
+
+
         // --- INITIALIZATION ---
         document.getElementById('preview-takehome').innerHTML = templateTakeHome;
         document.getElementById('doc-takehome').innerHTML = templateTakeHome;
@@ -510,22 +541,28 @@
         document.getElementById('preview-iphonetransfer').innerHTML = templateIphoneTransfer;
         document.getElementById('doc-iphonetransfer').innerHTML = templateIphoneTransfer;
 
-        // --- PRINT LOGIC ---
+        document.getElementById('preview-warpcalls').innerHTML = templateWarpCalls;
+        document.getElementById('doc-warpcalls').innerHTML = templateWarpCalls;
+
+        // --- PRINT LOGIC (v20 Performance Fix) ---
         function printDoc(type) {
+            // 1. Forcefully clear ANY existing print classes to prevent bleed-over
+            document.body.className = document.body.className.replace(/\bprinting-\S+/g, '');
+            
+            // 2. Add the requested print class
             document.body.classList.add('printing-' + type);
+            
+            // 3. Tiny timeout to ensure DOM updates before calling print dialog
             setTimeout(() => {
                 window.print();
-                setTimeout(() => {
-                    const returnToDash = () => {
-                        document.body.classList.remove('printing-' + type);
-                        window.removeEventListener('click', returnToDash);
-                        window.removeEventListener('touchstart', returnToDash);
-                    };
-                    window.addEventListener('click', returnToDash);
-                    window.addEventListener('touchstart', returnToDash);
-                }, 1000);
-            }, 500);
+            }, 100);
         }
+
+        // Native cleanup listener: instantly removes classes when dialog closes
+        window.addEventListener('afterprint', () => {
+            document.body.className = document.body.className.replace(/\bprinting-\S+/g, '');
+        });
+
     </script>
 
 </body>
