@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints v20</title>
+    <title>Prints v21</title>
     <style>
         /* --- BASE RESET --- */
         * {
@@ -33,6 +33,71 @@
             pointer-events: none;
         }
 
+        /* --- LOGIN VIEW STYLES (GATEKEEPER) --- */
+        #login-view {
+            max-width: 400px;
+            margin: 10vh auto;
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .login-warning {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        #pin-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            letter-spacing: 5px;
+            box-sizing: border-box;
+        }
+        
+        #pin-input:focus {
+            border-color: #1877f2;
+            outline: none;
+        }
+
+        #btn-enter {
+            width: 100%;
+            padding: 12px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #btn-enter:hover { background-color: #166fe5; }
+
+        #pin-error {
+            color: #d93025;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* --- APP VIEW CONTAINER --- */
+        #app-view {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
         /* --- DASHBOARD LAYOUT (TWO-ROW FLEXBOX) --- */
         #dashboard {
             display: flex;
@@ -56,6 +121,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            width: 100%;
         }
 
         /* --- TYPOGRAPHY & HIERARCHY --- */
@@ -79,18 +145,21 @@
             padding: 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 100%;
+            min-height: 250px;
         }
 
-        .box-blue { background-color: #1bb3e9; } /* v20 New Blue */
+        .box-blue { background-color: #1bb3e9; } 
         .box-gray { background-color: #e4e6eb; }
 
         .cards-container {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: flex-start;
+            width: 100%;
         }
 
         /* --- CARDS (PRIMARY & SECONDARY) --- */
@@ -157,14 +226,14 @@
 
         .secondary-card .preview-stage { transform: scale(0.18); }
 
-        /* --- UNFINISHED GUIDES UI --- */
+        /* --- UNFINISHED GUIDES UI (SOFT LOCK) --- */
         #unlock-container {
             display: flex;
             width: 100%;
             height: 100%;
             align-items: center;
             justify-content: center;
-            padding: 40px; /* Gives the gray box some body when empty */
+            padding: 40px; 
         }
 
         #btn-unlock-guides {
@@ -189,7 +258,8 @@
             display: none; /* Hidden by default */
             gap: 15px;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: flex-start;
+            width: 100%;
         }
 
         /* --- MODAL --- */
@@ -209,15 +279,13 @@
             padding: 25px;
             border-radius: 10px;
             width: 90%;
-            max-width: 450px;
+            max-width: 500px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             text-align: left;
             font-size: 15px;
             line-height: 1.5;
             color: #1c1e21;
         }
-
-        /* Removed the red color override here per v20 spec, bold text defaults to black */
 
         .modal-buttons {
             display: flex;
@@ -304,7 +372,7 @@
                 overflow: hidden !important; 
             }
             
-            #dashboard, #version-text, #warning-modal { display: none !important; }
+            #login-view, #app-view, #version-text, #warning-modal { display: none !important; }
 
             body.printing-takehome #doc-takehome { display: block !important; }
             body.printing-intake #doc-intake { display: block !important; }
@@ -312,6 +380,7 @@
             body.printing-vzwtrade #doc-vzwtrade { display: block !important; }
             body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
             body.printing-warpcalls #doc-warpcalls { display: block !important; }
+            body.printing-atttradein #doc-atttradein { display: block !important; }
 
             @page {
                 size: 8.5in 11in;
@@ -335,102 +404,115 @@
 </head>
 <body>
 
-    <div id="version-text">Beta 20</div>
+    <div id="version-text">Beta 21</div>
 
-    <!-- DASHBOARD LAYOUT -->
-    <div id="dashboard">
-        
-        <!-- ROW 1: PRIMARY DOCUMENTS -->
-        <div class="dashboard-row">
-            <div class="category-container">
-                <div class="category-title">Common printouts</div>
-                <div class="category-box box-blue">
-                    <div class="cards-container">
-                        <div class="action-card" onclick="printDoc('combined')">
-                            <div class="preview-stage" id="preview-combined"></div>
-                            <div class="card-overlay">
-                                <div class="card-title">Take Home Sheet</div>
-                                <div class="card-desc">Right Click / Tap to Print</div>
-                            </div>
-                        </div>
-                        <div class="action-card" onclick="printDoc('intake')">
-                            <div class="preview-stage" id="preview-intake"></div>
-                            <div class="card-overlay">
-                                <div class="card-title">Fill Out Sheet</div>
-                                <div class="card-desc">Right Click / Tap to Print</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ROW 2: SECONDARY DOCUMENTS -->
-        <div class="dashboard-row">
-            
-            <!-- Bottom Left: Other -->
-            <div class="category-container secondary-category">
-                <div class="category-title">Other</div>
-                <div class="category-box box-gray">
-                    <div class="cards-container">
-                        <div class="action-card secondary-card" onclick="printDoc('takehome')">
-                            <div class="preview-stage" id="preview-takehome"></div>
-                            <div class="card-overlay">
-                                <div class="card-title">half page cutting line</div>
-                                <div class="card-desc">Right Click / Tap to Print</div>
-                            </div>
-                        </div>
-                        <!-- New WARP Calls Guide -->
-                        <div class="action-card secondary-card" onclick="printDoc('warpcalls')">
-                            <div class="preview-stage" id="preview-warpcalls"></div>
-                            <div class="card-overlay">
-                                <div class="card-title">Guide for WARP calls</div>
-                                <div class="card-desc">Right Click / Tap to Print</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bottom Right: Unfinished Guides -->
-            <div class="category-container secondary-category">
-                <div class="category-title">Unfinished customer guides</div>
-                <div class="category-box box-gray">
-                    
-                    <!-- Soft Lock Button -->
-                    <div id="unlock-container">
-                        <button id="btn-unlock-guides">show unfinished documents</button>
-                    </div>
-
-                    <!-- Hidden Cards -->
-                    <div id="hidden-guides-container" class="cards-container">
-                        <div class="action-card secondary-card" onclick="printDoc('vzwtrade')">
-                            <div class="preview-stage" id="preview-vzwtrade"></div>
-                            <div class="card-overlay">
-                                <div class="card-title">Verizon Trade in Guide</div>
-                                <div class="card-desc">Right Click / Tap to Print</div>
-                            </div>
-                        </div>
-                        <div class="action-card secondary-card" onclick="printDoc('iphonetransfer')">
-                            <div class="preview-stage" id="preview-iphonetransfer"></div>
-                            <div class="card-overlay">
-                                <div class="card-title">iPhone transfer guide</div>
-                                <div class="card-desc">Right Click / Tap to Print</div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </div> <!-- End Row 2 -->
-
+    <!-- GATEKEEPER / LOGIN VIEW -->
+    <div id="login-view">
+        <p class="login-warning">
+            <strong style="font-size: 1.2em;">PROPRIETARY CONTENT</strong><br><br>
+            Unauthorized access and/or sharing is forbidden. To gain access, agree to these terms by inputting the passcode or pin given to you by the device administrator.
+        </p>
+        <input type="tel" id="pin-input" placeholder="Enter PIN">
+        <button id="btn-enter">Enter</button>
+        <p id="pin-error">Incorrect PIN</p>
     </div>
+
+    <!-- APP VIEW (Hidden by Default) -->
+    <div id="app-view" style="display: none;">
+        <!-- DASHBOARD LAYOUT -->
+        <div id="dashboard">
+            
+            <!-- ROW 1: PRIMARY DOCUMENTS -->
+            <div class="dashboard-row">
+                <div class="category-container">
+                    <div class="category-title">Common printouts</div>
+                    <div class="category-box box-blue">
+                        <div class="cards-container">
+                            <div class="action-card" onclick="printDoc('combined')">
+                                <div class="preview-stage" id="preview-combined"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">Take Home Sheet</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                            <div class="action-card" onclick="printDoc('intake')">
+                                <div class="preview-stage" id="preview-intake"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">Fill Out Sheet</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                            <!-- Guide for WARP Calls moved to Common -->
+                            <div class="action-card" onclick="printDoc('warpcalls')">
+                                <div class="preview-stage" id="preview-warpcalls"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">Guide for WARP calls</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: SECONDARY DOCUMENTS (SOFT LOCK) -->
+            <div class="dashboard-row">
+                
+                <div class="category-container secondary-category">
+                    <div class="category-title">Other</div>
+                    <div class="category-box box-gray">
+                        
+                        <!-- Soft Lock Button -->
+                        <div id="unlock-container">
+                            <button id="btn-unlock-guides">show other documents</button>
+                        </div>
+
+                        <!-- Hidden Cards -->
+                        <div id="hidden-guides-container" class="cards-container">
+                            <div class="action-card secondary-card" onclick="printDoc('vzwtrade')">
+                                <div class="preview-stage" id="preview-vzwtrade"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">Verizon Trade in Guide</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                            <div class="action-card secondary-card" onclick="printDoc('iphonetransfer')">
+                                <div class="preview-stage" id="preview-iphonetransfer"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">iPhone transfer guide</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                            <!-- Legacy Line moved to Other -->
+                            <div class="action-card secondary-card" onclick="printDoc('takehome')">
+                                <div class="preview-stage" id="preview-takehome"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">half page cutting line</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                            <!-- New ATT Trade In Flyer -->
+                            <div class="action-card secondary-card" onclick="printDoc('atttradein')">
+                                <div class="preview-stage" id="preview-atttradein"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">ATT Trade-In Flyer 3-13</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div> <!-- End Row 2 -->
+
+        </div>
+    </div> <!-- End App View -->
 
     <!-- WARNING MODAL -->
     <div id="warning-modal">
         <div class="modal-content">
-            <p><strong>Heads up!</strong><br>The Verizon trade in and iPhone transfer guides are unfinished documents and could easily provide <strong>inaccurate or damaging steps or information.</strong> Using these guides aren't advised until the documents have been properly rewritten with accurate information.</p>
+            <p><strong>The Verizon trade in and iPhone transfer guides are unfinished documents and could easily provide inaccurate or damaging steps or information.</strong> Using these guides aren't advised until the documents have been properly rewritten with accurate information.<br><br><strong>The ATT trade in guide has its upload date posted and may be out of date.</strong></p>
             <div class="modal-buttons">
                 <button class="btn-modal" id="btn-modal-okay">okay</button>
                 <button class="btn-modal" id="btn-modal-show">show unfinished documents anyway</button>
@@ -445,8 +527,35 @@
     <div id="doc-vzwtrade" class="doc-container"></div>
     <div id="doc-iphonetransfer" class="doc-container"></div>
     <div id="doc-warpcalls" class="doc-container"></div>
+    <div id="doc-atttradein" class="doc-container"></div>
 
     <script>
+        // --- GATEKEEPER LOGIC ---
+        const PIN_CODE = "102030";
+        const pinInput = document.getElementById('pin-input');
+        const btnEnter = document.getElementById('btn-enter');
+        const pinError = document.getElementById('pin-error');
+        const loginView = document.getElementById('login-view');
+        const appView = document.getElementById('app-view');
+
+        const checkPin = () => {
+            if (pinInput.value === PIN_CODE) {
+                loginView.style.display = 'none';
+                appView.style.display = 'flex';
+                // Trigger a small resize event to ensure layout calculates correctly if needed
+                window.dispatchEvent(new Event('resize'));
+            } else {
+                pinError.style.display = 'block';
+                pinInput.value = '';
+                pinInput.focus();
+            }
+        };
+
+        btnEnter.addEventListener('click', checkPin);
+        pinInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') checkPin();
+        });
+
         // --- MODAL LOGIC ---
         const btnUnlock = document.getElementById('btn-unlock-guides');
         const modal = document.getElementById('warning-modal');
@@ -524,6 +633,9 @@
         // 6. WARP Calls Guide
         const templateWarpCalls = `<div class="page"><img src="https://i.imgur.com/0YAC03J.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
+        // 7. ATT Trade-In Flyer
+        const templateAttTradeIn = `<div class="page"><img src="https://i.imgur.com/zqmfeFd.jpeg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
+
 
         // --- INITIALIZATION ---
         document.getElementById('preview-takehome').innerHTML = templateTakeHome;
@@ -543,6 +655,9 @@
 
         document.getElementById('preview-warpcalls').innerHTML = templateWarpCalls;
         document.getElementById('doc-warpcalls').innerHTML = templateWarpCalls;
+
+        document.getElementById('preview-atttradein').innerHTML = templateAttTradeIn;
+        document.getElementById('doc-atttradein').innerHTML = templateAttTradeIn;
 
         // --- PRINT LOGIC (v20 Performance Fix) ---
         function printDoc(type) {
