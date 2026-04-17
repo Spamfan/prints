@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints v21</title>
+    <title>Prints v22</title>
     <style>
         /* --- BASE RESET --- */
         * {
@@ -225,6 +225,24 @@
         }
 
         .secondary-card .preview-stage { transform: scale(0.18); }
+
+        /* --- AT&T LOCK STYLES --- */
+        .locked-card .preview-stage {
+            filter: grayscale(100%) opacity(30%);
+        }
+        .lock-overlay {
+            display: none;
+        }
+        .locked-card .lock-overlay {
+            display: flex;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: calc(100% - 50px);
+            align-items: center; justify-content: center;
+            background: rgba(200, 200, 200, 0.5);
+            z-index: 5;
+            font-weight: bold; font-size: 16px; color: #333;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
 
         /* --- UNFINISHED GUIDES UI (SOFT LOCK) --- */
         #unlock-container {
@@ -450,7 +468,18 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
+                            <div class="action-card locked-card" id="card-atttradein" onclick="handleAttClick()">
+                                <div class="preview-stage" id="preview-atttradein"></div>
+                                <div class="lock-overlay" id="lock-att">
+                                    <span>show doc</span>
+                                </div>
+                                <div class="card-overlay">
+                                    <div class="card-title">ATT Trade-In Flyer 3-13</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -491,16 +520,7 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
-                            <!-- New ATT Trade In Flyer -->
-                            <div class="action-card secondary-card" onclick="printDoc('atttradein')">
-                                <div class="preview-stage" id="preview-atttradein"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">ATT Trade-In Flyer 3-13</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
-                                </div>
-                            </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -512,7 +532,7 @@
     <!-- WARNING MODAL -->
     <div id="warning-modal">
         <div class="modal-content">
-            <p><strong>The Verizon trade in and iPhone transfer guides are unfinished documents and could easily provide inaccurate or damaging steps or information.</strong> Using these guides aren't advised until the documents have been properly rewritten with accurate information.<br><br><strong>The ATT trade in guide has its upload date posted and may be out of date.</strong></p>
+            <p><strong>The Verizon trade in and iPhone transfer guides are unfinished documents and could provide inaccurate/damaging steps or information.</strong> Using these guides isn't advised until the documents have been properly rewritten with accurate information.</p>
             <div class="modal-buttons">
                 <button class="btn-modal" id="btn-modal-okay">okay</button>
                 <button class="btn-modal" id="btn-modal-show">show unfinished documents anyway</button>
@@ -521,6 +541,16 @@
     </div>
 
     <!-- HIDDEN PRINT CONTAINERS -->
+    <div id="att-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="modal-content">
+            <p><strong>Heads up:</strong> the ATT trade in has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date trade in guide.</p>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-att-cancel" style="background-color: #e4e6eb; color: #1c1e21;">cancel</button>
+                <button class="btn-modal" id="btn-att-show" style="background-color: #1877f2; color: white;">I checked the date, show me the document</button>
+            </div>
+        </div>
+    </div>
+
     <div id="doc-takehome" class="doc-container"></div>
     <div id="doc-intake" class="doc-container"></div>
     <div id="doc-combined" class="doc-container"></div>
@@ -636,6 +666,29 @@
         // 7. ATT Trade-In Flyer
         const templateAttTradeIn = `<div class="page"><img src="https://i.imgur.com/zqmfeFd.jpeg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
+
+        // --- AT&T MODAL LOGIC ---
+        const attCard = document.getElementById('card-atttradein');
+        const attModal = document.getElementById('att-warning-modal');
+        const btnAttCancel = document.getElementById('btn-att-cancel');
+        const btnAttShow = document.getElementById('btn-att-show');
+
+        function handleAttClick() {
+            if (attCard.classList.contains('locked-card')) {
+                attModal.style.display = 'flex';
+            } else {
+                printDoc('atttradein');
+            }
+        }
+
+        btnAttCancel.addEventListener('click', () => {
+            attModal.style.display = 'none';
+        });
+
+        btnAttShow.addEventListener('click', () => {
+            attModal.style.display = 'none';
+            attCard.classList.remove('locked-card');
+        });
 
         // --- INITIALIZATION ---
         document.getElementById('preview-takehome').innerHTML = templateTakeHome;
