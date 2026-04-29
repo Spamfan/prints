@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints v22</title>
+    <title>Prints v23</title>
     <style>
         /* --- BASE RESET --- */
         * {
@@ -399,6 +399,7 @@
             body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
             body.printing-warpcalls #doc-warpcalls { display: block !important; }
             body.printing-atttradein #doc-atttradein { display: block !important; }
+            body.printing-takehomev2 #doc-takehomev2 { display: block !important; }
 
             @page {
                 size: 8.5in 11in;
@@ -422,7 +423,7 @@
 </head>
 <body>
 
-    <div id="version-text">Beta 21</div>
+    <div id="version-text">Beta 22</div>
 
     <!-- GATEKEEPER / LOGIN VIEW -->
     <div id="login-view">
@@ -475,6 +476,13 @@
                                 </div>
                                 <div class="card-overlay">
                                     <div class="card-title">ATT Trade-In Flyer 4-24 (unchanged)</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
+                            <div class="action-card" onclick="printDoc('takehomev2')">
+                                <div class="preview-stage" id="preview-takehomev2"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">Take Home Sheet V2</div>
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
@@ -558,6 +566,7 @@
     <div id="doc-iphonetransfer" class="doc-container"></div>
     <div id="doc-warpcalls" class="doc-container"></div>
     <div id="doc-atttradein" class="doc-container"></div>
+    <div id="doc-takehomev2" class="doc-container"></div>
 
     <script>
         // --- GATEKEEPER LOGIC ---
@@ -666,6 +675,8 @@
         // 7. ATT Trade-In Flyer
         const templateAttTradeIn = `<div class="page"><img src="https://i.imgur.com/zqmfeFd.jpeg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
+        // 8. Take Home Sheet V2
+        const templateTakeHomeV2 = `<div class="page"><img src="https://i.imgur.com/Ld9h79F.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"><div class="cut-line-horiz" style="z-index: 5;"></div></div>`;
 
         // --- AT&T MODAL LOGIC ---
         const attCard = document.getElementById('card-atttradein');
@@ -711,6 +722,9 @@
 
         document.getElementById('preview-atttradein').innerHTML = templateAttTradeIn;
         document.getElementById('doc-atttradein').innerHTML = templateAttTradeIn;
+
+        document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
+        document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
 
         // --- PRINT LOGIC (v20 Performance Fix) ---
         function printDoc(type) {
