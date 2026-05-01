@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prints v23</title>
+    <title>Prints</title>
     <style>
         /* --- BASE RESET --- */
         * {
@@ -333,6 +333,121 @@
         }
         #btn-modal-show:hover { background-color: #b3241c; }
 
+        /* --- TUTORIAL MODAL & BUTTONS --- */
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .tutorial-btn {
+            background: #ffc107;
+            border: none;
+            color: #000000;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tutorial-btn:hover {
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        }
+        #tutorial-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #tutorial-modal .modal-content {
+            max-width: 650px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0;
+        }
+        .tut-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tut-header h2 { font-size: 18px; margin: 0; color: #1c1e21; }
+        .tut-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .tutorial-tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            color: #606770;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { background: #f0f2f5; }
+        .tab-btn.active {
+            color: #1877f2;
+            font-weight: bold;
+            border-bottom-color: #1877f2;
+        }
+        .tut-img-container {
+            width: 100%;
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            min-height: 200px;
+        }
+        .tut-img-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        .tut-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .tut-text ul {
+            margin: 10px 0 10px 20px;
+            padding: 0;
+        }
+        .tut-text li { margin-bottom: 8px; }
+        .tut-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn-tut-print { background-color: #1877f2; color: white; }
+        .btn-tut-print:hover { background-color: #166fe5; }
+
         /* --- PRINT STYLES --- */
         .doc-container { display: none; }
 
@@ -390,7 +505,7 @@
                 overflow: hidden !important; 
             }
             
-            #login-view, #app-view, #version-text, #warning-modal { display: none !important; }
+            #login-view, #app-view, #version-text, #warning-modal, #tutorial-modal { display: none !important; }
 
             body.printing-takehome #doc-takehome { display: block !important; }
             body.printing-intake #doc-intake { display: block !important; }
@@ -423,7 +538,7 @@
 </head>
 <body>
 
-    <div id="version-text">Beta 23</div>
+    <div id="version-text"></div>
 
     <!-- GATEKEEPER / LOGIN VIEW -->
     <div id="login-view">
@@ -479,12 +594,15 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
-                            <div class="action-card" onclick="printDoc('takehomev2')">
-                                <div class="preview-stage" id="preview-takehomev2"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">Take Home Sheet V2</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
+                            <div class="card-wrapper">
+                                <div class="action-card" onclick="printDoc('takehomev2')">
+                                    <div class="preview-stage" id="preview-takehomev2"></div>
+                                    <div class="card-overlay">
+                                        <div class="card-title">Take Home Sheet V2</div>
+                                        <div class="card-desc">Right Click / Tap to Print</div>
+                                    </div>
                                 </div>
+                                <button class="tutorial-btn" id="btn-tut-ths2">how to use this sheet</button>
                             </div>
                         </div>
 
@@ -568,7 +686,53 @@
     <div id="doc-atttradein" class="doc-container"></div>
     <div id="doc-takehomev2" class="doc-container"></div>
 
+    <!-- TUTORIAL MODAL -->
+    <div id="tutorial-modal">
+        <div class="modal-content">
+            <div class="tut-header">
+                <h2>Take Home Sheet V2 Guide</h2>
+            </div>
+            <div class="tut-body">
+                <div class="tutorial-tabs">
+                    <button class="tab-btn active" data-carrier="att">AT&T</button>
+                    <button class="tab-btn" data-carrier="vzw">Verizon</button>
+                    <button class="tab-btn" data-carrier="tmo">T-Mobile</button>
+                </div>
+                <p><strong>Click on each carrier to see an example filled out.</strong></p>
+                <br>
+                <div class="tut-img-container">
+                    <img id="tut-example-img" src="https://via.placeholder.com/800x500?text=ATT+Example" alt="Example Sheet">
+                </div>
+                <div class="tut-text">
+                    <p style="margin-top: 10px;"><strong>Give this to postpaid customers before they leave. On each sheet:</strong></p>
+                    <ul>
+                        <li>Write the customer's name, carrier name, account pin, and phone number.</li>
+                        <li>In bill estimates, round up to the nearest "worst-case-for-customer" dollar amount.</li>
+                        <li>Assure the customer they can generally leave the carrier when they want, the amount shown of 2 or 3 years only indicates how long it would take them or their carrier to pay off the financed device(s) at that rate.</li>
+                        <li>The entire "important notices" section at the bottom can be entirely cut off for T-Mobile customers since it won't become relevant.</li>
+                    </ul>
+                    <br>
+                    <p style="margin-top: 10px;"><strong>For ATT/VZW papers only:</strong></p>
+                    <ul>
+                        <li>Assume ALL bill credits WON'T go through until after bill 1.</li>
+                        <li>Additionally showing the customer how high ATT/VZW will overestimate their bill is important, since most Walmart bill credits don't become visible to the carrier until about the time the second bill becomes pulled.</li>
+                        <li>In the examples shown, the amounts expected to be reimbursed to bills 2 and 3 are represented by "x."<br>
+                        --- Example, if ATT gives back the whole $35 act fee on bill 2, that one would be 58-x, in this case 58-35=23. However, they may send it to Bill 3 instead, so bill 2 would remain as 58 with bill 3 as 58-x=23. There can also be a mix where x is spread between multiple bills , such as Bill 2=33 and Bill 3 =48.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tut-footer">
+                <button class="btn-modal" id="tut-btn-close" style="background-color: #e4e6eb; color: #1c1e21;">close tutorial</button>
+                <button class="btn-modal btn-tut-print" id="tut-btn-print">Print THS v2</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- VERSIONING ---
+        const APP_VERSION = "Beta 25";
+        document.getElementById('version-text').textContent = APP_VERSION;
+
         // --- GATEKEEPER LOGIC ---
         const PIN_CODE = "102030";
         const pinInput = document.getElementById('pin-input');
@@ -743,6 +907,57 @@
         // Native cleanup listener: instantly removes classes when dialog closes
         window.addEventListener('afterprint', () => {
             document.body.className = document.body.className.replace(/\bprinting-\S+/g, '');
+        });
+
+// --- TUTORIAL MODAL LOGIC ---
+        const tutModal = document.getElementById('tutorial-modal');
+        const btnOpenTut = document.getElementById('btn-tut-ths2');
+        const btnCloseTutFooter = document.getElementById('tut-btn-close');
+        const btnPrintTut = document.getElementById('tut-btn-print');
+        const tutTabs = document.querySelectorAll('.tab-btn');
+        const tutImg = document.getElementById('tut-example-img');
+
+        // Placeholder URLs - easy to update later
+        const exampleImages = {
+            att: 'https://i.imgur.com/BnLTk4j.png',
+            vzw: 'https://i.imgur.com/cmEg0MT.png',
+            tmo: 'https://i.imgur.com/5DQ22AB.png'
+        };
+
+        const closeTutModal = () => { tutModal.style.display = 'none'; };
+
+        if (btnOpenTut) {
+            btnOpenTut.addEventListener('click', () => {
+                tutModal.style.display = 'flex';
+                // Reset to ATT on open
+                tutTabs.forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab-btn[data-carrier="att"]').classList.add('active');
+                tutImg.src = exampleImages.att;
+            });
+        }
+
+        btnCloseTutFooter.addEventListener('click', closeTutModal);
+        
+        // Close when clicking outside modal content
+        tutModal.addEventListener('click', (e) => {
+            if (e.target === tutModal) closeTutModal();
+        });
+
+        btnPrintTut.addEventListener('click', () => {
+            printDoc('takehomev2');
+        });
+
+        tutTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                // Update active tab styling
+                tutTabs.forEach(t => t.classList.remove('active'));
+                const clickedTab = e.currentTarget;
+                clickedTab.classList.add('active');
+                
+                // Update image source
+                const carrier = clickedTab.getAttribute('data-carrier');
+                tutImg.src = exampleImages[carrier];
+            });
         });
 
     </script>
