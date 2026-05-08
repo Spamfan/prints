@@ -37,6 +37,37 @@
             pointer-events: none;
         }
 
+        #hub-link-stack {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .hub-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #e4e6eb;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            color: #1c1e21;
+            user-select: none;
+            text-decoration: none;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+        .hub-btn:hover {
+            background: #d8dadf;
+        }
+
         /* --- LOGIN VIEW STYLES (GATEKEEPER) --- */
         #login-view {
             max-width: 400px;
@@ -509,7 +540,7 @@
                 overflow: hidden !important; 
             }
             
-            #login-view, #app-view, #version-text, #warning-modal, #tutorial-modal { display: none !important; }
+            #login-view, #app-view, #version-text, #warning-modal, #tutorial-modal, #hub-link-stack { display: none !important; }
 
             body.printing-takehome #doc-takehome { display: block !important; }
             body.printing-intake #doc-intake { display: block !important; }
@@ -543,6 +574,13 @@
 <body>
 
     <div id="version-text"></div>
+
+    <div id="hub-link-stack">
+        <a href="https://spamfan.github.io" target="_self" class="hub-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1em; height: 1em;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>spamfan.github.io</span>
+        </a>
+    </div>
 
     <!-- GATEKEEPER / LOGIN VIEW -->
     <div id="login-view">
