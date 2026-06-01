@@ -533,11 +533,19 @@
         .intake-line { border-bottom: 1px solid black; width: 100%; height: 1px; display: block; margin-top: 14px; }
 
         @media print {
-            html, body {
+            html:not(.multi-page), body:not(.multi-page) {
                 height: 100%;
+                overflow: hidden !important; 
+            }
+            
+            html.multi-page, body.multi-page {
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            html, body {
                 margin: 0 !important;
                 padding: 0 !important;
-                overflow: hidden !important; 
             }
             
             #login-view, #app-view, #version-text, #warning-modal, #tutorial-modal, #hub-link-stack { display: none !important; }
@@ -549,6 +557,7 @@
             body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
             body.printing-warpcalls #doc-warpcalls { display: block !important; }
             body.printing-atttradein #doc-atttradein { display: block !important; }
+            body.printing-attpromos #doc-attpromos { display: block !important; }
             body.printing-takehomev2 #doc-takehomev2 { display: block !important; }
 
             @page {
@@ -636,6 +645,16 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
+                            <div class="action-card locked-card" id="card-attpromos" onclick="handleAttPromosClick()">
+                                <div class="preview-stage" id="preview-attpromos"></div>
+                                <div class="lock-overlay" id="lock-attpromos">
+                                    <span>show doc</span>
+                                </div>
+                                <div class="card-overlay">
+                                    <div class="card-title">AT&T Promos 06-01-2026</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
                             <div class="card-wrapper">
                                 <div class="action-card" onclick="printDoc('takehomev2')">
                                     <div class="preview-stage" id="preview-takehomev2"></div>
@@ -708,13 +727,23 @@
         </div>
     </div>
 
-    <!-- HIDDEN PRINT CONTAINERS -->
+    <!-- HIDDEN PRINT CONTAINERS & MODALS -->
     <div id="att-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
         <div class="modal-content">
             <p><strong>Heads up:</strong> the ATT trade in has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date trade in guide.</p>
             <div class="modal-buttons">
                 <button class="btn-modal" id="btn-att-cancel" style="background-color: #e4e6eb; color: #1c1e21;">cancel</button>
                 <button class="btn-modal" id="btn-att-show" style="background-color: #1877f2; color: white;">I checked the date, show me the document</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="att-promos-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="modal-content">
+            <p><strong>Heads up:</strong> the ATT flyer has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date promo flyer.</p>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-attpromos-cancel" style="background-color: #e4e6eb; color: #1c1e21;">cancel</button>
+                <button class="btn-modal" id="btn-attpromos-show" style="background-color: #1877f2; color: white;">I checked the date, show me the document</button>
             </div>
         </div>
     </div>
@@ -726,6 +755,7 @@
     <div id="doc-iphonetransfer" class="doc-container"></div>
     <div id="doc-warpcalls" class="doc-container"></div>
     <div id="doc-atttradein" class="doc-container"></div>
+    <div id="doc-attpromos" class="doc-container"></div>
     <div id="doc-takehomev2" class="doc-container"></div>
 
     <!-- TUTORIAL MODAL -->
@@ -743,7 +773,7 @@
                 <p><strong>Click on each carrier to see an example filled out.</strong></p>
                 <br>
                 <div class="tut-img-container">
-                    <img id="tut-example-img" src="https://via.placeholder.com/800x500?text=ATT+Example" alt="Example Sheet">
+                    <img id="tut-example-img" src="https://i.imgur.com/BnLTk4j.png" alt="Example Sheet">
                 </div>
                 <div class="tut-text">
                     <p style="margin-top: 10px;"><strong>Give this to postpaid customers before they leave. On each sheet:</strong></p>
@@ -772,7 +802,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "Beta 26";
+        const APP_VERSION = "Beta 28";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -881,10 +911,16 @@
         // 7. ATT Trade-In Flyer
         const templateAttTradeIn = `<div class="page"><img src="https://i.imgur.com/zqmfeFd.jpeg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
-        // 8. Take Home Sheet V2
+        // 8. AT&T Promos (2 Pages overriding absolute positioning lock for multi-page print)
+        const templateAttPromos = `
+            <div class="page" style="position: relative !important; break-after: page !important; page-break-after: always !important;"><img src="https://i.imgur.com/U12CtGA.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>
+            <div class="page" style="position: relative !important;"><img src="https://i.imgur.com/0gkjGDG.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>
+        `;
+
+        // 9. Take Home Sheet V2
         const templateTakeHomeV2 = `<div class="page"><img src="https://i.imgur.com/JgUhVaD.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"><div class="cut-line-horiz" style="z-index: 5;"></div></div>`;
 
-        // --- AT&T MODAL LOGIC ---
+        // --- AT&T TRADE-IN MODAL LOGIC ---
         const attCard = document.getElementById('card-atttradein');
         const attModal = document.getElementById('att-warning-modal');
         const btnAttCancel = document.getElementById('btn-att-cancel');
@@ -905,6 +941,29 @@
         btnAttShow.addEventListener('click', () => {
             attModal.style.display = 'none';
             attCard.classList.remove('locked-card');
+        });
+
+        // --- AT&T PROMOS MODAL LOGIC ---
+        const attPromosCard = document.getElementById('card-attpromos');
+        const attPromosModal = document.getElementById('att-promos-warning-modal');
+        const btnAttPromosCancel = document.getElementById('btn-attpromos-cancel');
+        const btnAttPromosShow = document.getElementById('btn-attpromos-show');
+
+        function handleAttPromosClick() {
+            if (attPromosCard.classList.contains('locked-card')) {
+                attPromosModal.style.display = 'flex';
+            } else {
+                printDoc('attpromos');
+            }
+        }
+
+        btnAttPromosCancel.addEventListener('click', () => {
+            attPromosModal.style.display = 'none';
+        });
+
+        btnAttPromosShow.addEventListener('click', () => {
+            attPromosModal.style.display = 'none';
+            attPromosCard.classList.remove('locked-card');
         });
 
         // --- INITIALIZATION ---
@@ -929,6 +988,9 @@
         document.getElementById('preview-atttradein').innerHTML = templateAttTradeIn;
         document.getElementById('doc-atttradein').innerHTML = templateAttTradeIn;
 
+        document.getElementById('preview-attpromos').innerHTML = templateAttPromos;
+        document.getElementById('doc-attpromos').innerHTML = templateAttPromos;
+
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
 
@@ -936,9 +998,17 @@
         function printDoc(type) {
             // 1. Forcefully clear ANY existing print classes to prevent bleed-over
             document.body.className = document.body.className.replace(/\bprinting-\S+/g, '');
+            document.body.classList.remove('multi-page');
+            document.documentElement.classList.remove('multi-page');
             
             // 2. Add the requested print class
             document.body.classList.add('printing-' + type);
+
+            // Multi-page override
+            if (type === 'attpromos') {
+                document.body.classList.add('multi-page');
+                document.documentElement.classList.add('multi-page');
+            }
             
             // 3. Tiny timeout to ensure DOM updates before calling print dialog
             setTimeout(() => {
@@ -949,9 +1019,11 @@
         // Native cleanup listener: instantly removes classes when dialog closes
         window.addEventListener('afterprint', () => {
             document.body.className = document.body.className.replace(/\bprinting-\S+/g, '');
+            document.body.classList.remove('multi-page');
+            document.documentElement.classList.remove('multi-page');
         });
 
-// --- TUTORIAL MODAL LOGIC ---
+        // --- TUTORIAL MODAL LOGIC ---
         const tutModal = document.getElementById('tutorial-modal');
         const btnOpenTut = document.getElementById('btn-tut-ths2');
         const btnCloseTutFooter = document.getElementById('tut-btn-close');
