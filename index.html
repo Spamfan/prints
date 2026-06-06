@@ -802,7 +802,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "Beta 28";
+        const APP_VERSION = "Beta 29";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -994,12 +994,20 @@
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
 
-        // --- PRINT LOGIC (v20 Performance Fix) ---
-        function printDoc(type) {
-            // 1. Forcefully clear ANY existing print classes to prevent bleed-over
+        // --- PRINT LOGIC (Tap-to-Return Mobile Fix) ---
+        function cleanupPrint() {
             document.body.className = document.body.className.replace(/\bprinting-\S+/g, '');
             document.body.classList.remove('multi-page');
             document.documentElement.classList.remove('multi-page');
+            
+            // Remove listeners to prevent memory leaks and accidental triggers later
+            window.removeEventListener('click', cleanupPrint, true);
+            window.removeEventListener('touchstart', cleanupPrint, true);
+        }
+
+        function printDoc(type) {
+            // 1. Forcefully clear ANY existing print classes to prevent bleed-over
+            cleanupPrint();
             
             // 2. Add the requested print class
             document.body.classList.add('printing-' + type);
@@ -1013,15 +1021,17 @@
             // 3. Tiny timeout to ensure DOM updates before calling print dialog
             setTimeout(() => {
                 window.print();
+                
+                // 4. Mobile Tap-to-Return Logic
+                // Wait for the print dialog to seize the main thread, then attach listeners
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        window.addEventListener('click', cleanupPrint, true);
+                        window.addEventListener('touchstart', cleanupPrint, true);
+                    }, 500); // 500ms delay prevents the initial button tap from triggering cleanup
+                });
             }, 100);
         }
-
-        // Native cleanup listener: instantly removes classes when dialog closes
-        window.addEventListener('afterprint', () => {
-            document.body.className = document.body.className.replace(/\bprinting-\S+/g, '');
-            document.body.classList.remove('multi-page');
-            document.documentElement.classList.remove('multi-page');
-        });
 
         // --- TUTORIAL MODAL LOGIC ---
         const tutModal = document.getElementById('tutorial-modal');
