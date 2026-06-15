@@ -597,7 +597,7 @@
             <strong style="font-size: 1.2em;">PROPRIETARY CONTENT</strong><br><br>
             Unauthorized access and/or sharing is forbidden. To gain access, agree to these terms by inputting the passcode or pin given to you by the device administrator.
         </p>
-        <input type="tel" id="pin-input" placeholder="Enter PIN">
+        <input type="tel" id="pin-input" placeholder="Enter PIN" style="-webkit-text-security: disc;" autofocus>
         <button id="btn-enter">Enter</button>
         <p id="pin-error">Incorrect PIN</p>
     </div>
@@ -802,19 +802,26 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "Beta 29";
+        const APP_VERSION = "v0.30";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
-        const PIN_CODE = "102030";
+        const LEGACY_PIN = atob('MTAyMDMw'); // "102030"
+        const DYNAMIC_SUFFIX = atob('MTAyMA=='); // "1020"
         const pinInput = document.getElementById('pin-input');
         const btnEnter = document.getElementById('btn-enter');
         const pinError = document.getElementById('pin-error');
         const loginView = document.getElementById('login-view');
         const appView = document.getElementById('app-view');
 
+        pinInput.focus(); // Fallback for browsers that ignore HTML autofocus
+
+        const isValidPin = (val) => {
+            return val === LEGACY_PIN || (val.length === 8 && val.endsWith(DYNAMIC_SUFFIX));
+        };
+
         const checkPin = () => {
-            if (pinInput.value === PIN_CODE) {
+            if (isValidPin(pinInput.value)) {
                 loginView.style.display = 'none';
                 appView.style.display = 'flex';
                 // Trigger a small resize event to ensure layout calculates correctly if needed
@@ -829,6 +836,12 @@
         btnEnter.addEventListener('click', checkPin);
         pinInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') checkPin();
+        });
+        pinInput.addEventListener('input', (e) => {
+            if (isValidPin(e.target.value)) {
+                e.target.blur(); // Hide mobile keyboard
+                checkPin();
+            }
         });
 
         // --- MODAL LOGIC ---
