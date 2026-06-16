@@ -729,7 +729,7 @@
     <div id="tutorial-modal">
         <div class="modal-content">
             <div class="tut-header">
-                <h2>Take Home Sheet V2 Guide</h2>
+                <h2>Take Home Sheet Guide</h2>
             </div>
             <div class="tut-body">
                 <div class="tutorial-tabs">
@@ -762,14 +762,14 @@
             </div>
             <div class="tut-footer">
                 <button class="btn-modal" id="tut-btn-close" style="background-color: #e4e6eb; color: #1c1e21;">close tutorial</button>
-                <button class="btn-modal btn-tut-print" id="tut-btn-print">Print THS v2</button>
+                <button class="btn-modal btn-tut-print" id="tut-btn-print">Print THS</button>
             </div>
         </div>
     </div>
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.32";
+        const APP_VERSION = "v0.33";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -929,6 +929,15 @@
 
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
+
+        // Deferred Thumbnail Loading for Snappiness
+        setTimeout(() => {
+            const templateAttPromosThumb = `<iframe src="ATT Promos 06-16-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
+            const previewElement = document.getElementById('preview-attpromos');
+            if (previewElement) {
+                previewElement.innerHTML = templateAttPromosThumb;
+            }
+        }, 800);
 
         // --- PDF PRINT ENGINE ---
         function printPDF(url) {
