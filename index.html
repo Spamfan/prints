@@ -655,6 +655,13 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
+                            <div class="action-card" onclick="printPDF('att-promos-test.pdf')">
+                                <div class="preview-stage" id="preview-attpromos-test"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">Promo Test PDF</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
                             <div class="card-wrapper">
                                 <div class="action-card" onclick="printDoc('takehomev2')">
                                     <div class="preview-stage" id="preview-takehomev2"></div>
@@ -802,7 +809,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.30";
+        const APP_VERSION = "v0.31";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -1004,8 +1011,40 @@
         document.getElementById('preview-attpromos').innerHTML = templateAttPromos;
         document.getElementById('doc-attpromos').innerHTML = templateAttPromos;
 
+        // Initialize preview thumbnail for the PDF test card
+        document.getElementById('preview-attpromos-test').innerHTML = templateAttPromos;
+
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
+
+        // --- PDF PRINT ENGINE ---
+        function printPDF(url) {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Mobile fallback: Open PDF in a new tab for native handling
+                window.open(url, '_blank');
+            } else {
+                // Desktop/WMPC: Hidden iframe print engine
+                let printFrame = document.getElementById('pdf-print-frame');
+                if (!printFrame) {
+                    printFrame = document.createElement('iframe');
+                    printFrame.id = 'pdf-print-frame';
+                    printFrame.style.display = 'none';
+                    document.body.appendChild(printFrame);
+                }
+                
+                // Set onload listener to print once the PDF is loaded into the iframe
+                printFrame.onload = function() {
+                    setTimeout(() => {
+                        printFrame.contentWindow.print();
+                    }, 500); // Tiny delay to ensure browser's internal PDF engine is ready
+                };
+                
+                // Trigger the load
+                printFrame.src = url;
+            }
+        }
 
         // --- PRINT LOGIC (Tap-to-Return Mobile Fix) ---
         function cleanupPrint() {
