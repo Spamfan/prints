@@ -645,6 +645,16 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
+                            <div class="action-card locked-card" id="card-vzwpromos" onclick="handleVzwPromosClick()">
+                                <div class="preview-stage" id="preview-vzwpromos"></div>
+                                <div class="lock-overlay" id="lock-vzwpromos">
+                                    <span>show doc</span>
+                                </div>
+                                <div class="card-overlay">
+                                    <div class="card-title">VZW Promos 6-16-26</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -718,6 +728,16 @@
         </div>
     </div>
 
+    <div id="vzw-promos-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="modal-content">
+            <p><strong>Heads up:</strong> the Verizon flyer has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date promo flyer.</p>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-vzwpromos-cancel" style="background-color: #e4e6eb; color: #1c1e21;">cancel</button>
+                <button class="btn-modal" id="btn-vzwpromos-show" style="background-color: #1877f2; color: white;">I checked the date, show me the document</button>
+            </div>
+        </div>
+    </div>
+
     <div id="doc-takehome" class="doc-container"></div>
     <div id="doc-intake" class="doc-container"></div>
     <div id="doc-vzwtrade" class="doc-container"></div>
@@ -769,7 +789,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.33";
+        const APP_VERSION = "v0.34";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -911,6 +931,29 @@
             attPromosCard.classList.remove('locked-card');
         });
 
+        // --- VZW PROMOS MODAL LOGIC ---
+        const vzwPromosCard = document.getElementById('card-vzwpromos');
+        const vzwPromosModal = document.getElementById('vzw-promos-warning-modal');
+        const btnVzwPromosCancel = document.getElementById('btn-vzwpromos-cancel');
+        const btnVzwPromosShow = document.getElementById('btn-vzwpromos-show');
+
+        function handleVzwPromosClick() {
+            if (vzwPromosCard.classList.contains('locked-card')) {
+                vzwPromosModal.style.display = 'flex';
+            } else {
+                printPDF('VZW Promos 6-16-26.pdf');
+            }
+        }
+
+        btnVzwPromosCancel.addEventListener('click', () => {
+            vzwPromosModal.style.display = 'none';
+        });
+
+        btnVzwPromosShow.addEventListener('click', () => {
+            vzwPromosModal.style.display = 'none';
+            vzwPromosCard.classList.remove('locked-card');
+        });
+
         // --- INITIALIZATION ---
         document.getElementById('preview-takehome').innerHTML = templateTakeHome;
         document.getElementById('doc-takehome').innerHTML = templateTakeHome;
@@ -936,6 +979,12 @@
             const previewElement = document.getElementById('preview-attpromos');
             if (previewElement) {
                 previewElement.innerHTML = templateAttPromosThumb;
+            }
+
+            const templateVzwPromosThumb = `<iframe src="VZW Promos 6-16-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
+            const previewElementVzw = document.getElementById('preview-vzwpromos');
+            if (previewElementVzw) {
+                previewElementVzw.innerHTML = templateVzwPromosThumb;
             }
         }, 800);
 
