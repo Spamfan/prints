@@ -552,12 +552,9 @@
 
             body.printing-takehome #doc-takehome { display: block !important; }
             body.printing-intake #doc-intake { display: block !important; }
-            body.printing-combined #doc-combined { display: block !important; }
             body.printing-vzwtrade #doc-vzwtrade { display: block !important; }
             body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
             body.printing-warpcalls #doc-warpcalls { display: block !important; }
-            body.printing-atttradein #doc-atttradein { display: block !important; }
-            body.printing-attpromos #doc-attpromos { display: block !important; }
             body.printing-takehomev2 #doc-takehomev2 { display: block !important; }
 
             @page {
@@ -613,17 +610,20 @@
                     <div class="category-title">Common printouts</div>
                     <div class="category-box box-blue">
                         <div class="cards-container">
-                            <div class="action-card" onclick="printDoc('combined')">
-                                <div class="preview-stage" id="preview-combined"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">Take Home Sheet</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
+                            <div class="card-wrapper">
+                                <div class="action-card" onclick="printDoc('takehomev2')">
+                                    <div class="preview-stage" id="preview-takehomev2"></div>
+                                    <div class="card-overlay">
+                                        <div class="card-title">Take Home Sheet</div>
+                                        <div class="card-desc">Right Click / Tap to Print</div>
+                                    </div>
                                 </div>
+                                <button class="tutorial-btn" id="btn-tut-ths2">how to use this sheet</button>
                             </div>
                             <div class="action-card" onclick="printDoc('intake')">
                                 <div class="preview-stage" id="preview-intake"></div>
                                 <div class="card-overlay">
-                                    <div class="card-title">Fill Out Sheet</div>
+                                    <div class="card-title">Intake Sheet</div>
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
@@ -635,42 +635,15 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
-                            <div class="action-card locked-card" id="card-atttradein" onclick="handleAttClick()">
-                                <div class="preview-stage" id="preview-atttradein"></div>
-                                <div class="lock-overlay" id="lock-att">
-                                    <span>show doc</span>
-                                </div>
-                                <div class="card-overlay">
-                                    <div class="card-title">ATT Trade-In Flyer 06-12</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
-                                </div>
-                            </div>
                             <div class="action-card locked-card" id="card-attpromos" onclick="handleAttPromosClick()">
                                 <div class="preview-stage" id="preview-attpromos"></div>
                                 <div class="lock-overlay" id="lock-attpromos">
                                     <span>show doc</span>
                                 </div>
                                 <div class="card-overlay">
-                                    <div class="card-title">AT&T Promos 06-12-2026</div>
+                                    <div class="card-title">AT&T Promos 06-16-26</div>
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
-                            </div>
-                            <div class="action-card" onclick="printPDF('att-promos-test.pdf')">
-                                <div class="preview-stage" id="preview-attpromos-test"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">Promo Test PDF</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
-                                </div>
-                            </div>
-                            <div class="card-wrapper">
-                                <div class="action-card" onclick="printDoc('takehomev2')">
-                                    <div class="preview-stage" id="preview-takehomev2"></div>
-                                    <div class="card-overlay">
-                                        <div class="card-title">Take Home Sheet V2</div>
-                                        <div class="card-desc">Right Click / Tap to Print</div>
-                                    </div>
-                                </div>
-                                <button class="tutorial-btn" id="btn-tut-ths2">how to use this sheet</button>
                             </div>
                         </div>
 
@@ -735,16 +708,6 @@
     </div>
 
     <!-- HIDDEN PRINT CONTAINERS & MODALS -->
-    <div id="att-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
-        <div class="modal-content">
-            <p><strong>Heads up:</strong> the ATT trade in has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date trade in guide.</p>
-            <div class="modal-buttons">
-                <button class="btn-modal" id="btn-att-cancel" style="background-color: #e4e6eb; color: #1c1e21;">cancel</button>
-                <button class="btn-modal" id="btn-att-show" style="background-color: #1877f2; color: white;">I checked the date, show me the document</button>
-            </div>
-        </div>
-    </div>
-
     <div id="att-promos-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
         <div class="modal-content">
             <p><strong>Heads up:</strong> the ATT flyer has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date promo flyer.</p>
@@ -757,12 +720,9 @@
 
     <div id="doc-takehome" class="doc-container"></div>
     <div id="doc-intake" class="doc-container"></div>
-    <div id="doc-combined" class="doc-container"></div>
     <div id="doc-vzwtrade" class="doc-container"></div>
     <div id="doc-iphonetransfer" class="doc-container"></div>
     <div id="doc-warpcalls" class="doc-container"></div>
-    <div id="doc-atttradein" class="doc-container"></div>
-    <div id="doc-attpromos" class="doc-container"></div>
     <div id="doc-takehomev2" class="doc-container"></div>
 
     <!-- TUTORIAL MODAL -->
@@ -809,7 +769,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.31";
+        const APP_VERSION = "v0.32";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -916,9 +876,6 @@
             </div>`;
         const templateIntake = `<div class="page"><div class="intake-grid">${contentIntakeQuad}${contentIntakeQuad}${contentIntakeQuad}${contentIntakeQuad}</div><div class="cut-line-vert"></div><div class="cut-line-horiz" style="top: 5.45in;"></div></div>`;
 
-        // 3. Combined THS
-        const templateCombined = `<div class="page"><img src="https://i.imgur.com/qpnpyBd.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"><div class="cut-line-horiz" style="z-index: 5;"></div></div>`;
-
         // 4. VZW Trade In
         const templateVzwTrade = `<div class="page"><img src="https://i.imgur.com/1vBTDLU.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
@@ -928,40 +885,8 @@
         // 6. WARP Calls Guide
         const templateWarpCalls = `<div class="page"><img src="https://i.imgur.com/0YAC03J.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
 
-        // 7. ATT Trade-In Flyer
-        const templateAttTradeIn = `<div class="page"><img src="https://i.imgur.com/bGRBWik.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
-
-        // 8. AT&T Promos (2 Pages overriding absolute positioning lock for multi-page print)
-        const templateAttPromos = `
-            <div class="page" style="position: relative !important; break-after: page !important; page-break-after: always !important;"><img src="https://i.imgur.com/eF2WbEG.pngam" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>
-            <div class="page" style="position: relative !important;"><img src="https://i.imgur.com/Oq8OCHA.jpeg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>
-        `;
-
         // 9. Take Home Sheet V2
         const templateTakeHomeV2 = `<div class="page"><img src="https://i.imgur.com/JgUhVaD.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"><div class="cut-line-horiz" style="z-index: 5;"></div></div>`;
-
-        // --- AT&T TRADE-IN MODAL LOGIC ---
-        const attCard = document.getElementById('card-atttradein');
-        const attModal = document.getElementById('att-warning-modal');
-        const btnAttCancel = document.getElementById('btn-att-cancel');
-        const btnAttShow = document.getElementById('btn-att-show');
-
-        function handleAttClick() {
-            if (attCard.classList.contains('locked-card')) {
-                attModal.style.display = 'flex';
-            } else {
-                printDoc('atttradein');
-            }
-        }
-
-        btnAttCancel.addEventListener('click', () => {
-            attModal.style.display = 'none';
-        });
-
-        btnAttShow.addEventListener('click', () => {
-            attModal.style.display = 'none';
-            attCard.classList.remove('locked-card');
-        });
 
         // --- AT&T PROMOS MODAL LOGIC ---
         const attPromosCard = document.getElementById('card-attpromos');
@@ -973,7 +898,7 @@
             if (attPromosCard.classList.contains('locked-card')) {
                 attPromosModal.style.display = 'flex';
             } else {
-                printDoc('attpromos');
+                printPDF('ATT Promos 06-16-26.pdf');
             }
         }
 
@@ -992,9 +917,6 @@
         
         document.getElementById('preview-intake').innerHTML = templateIntake;
         document.getElementById('doc-intake').innerHTML = templateIntake;
-        
-        document.getElementById('preview-combined').innerHTML = templateCombined;
-        document.getElementById('doc-combined').innerHTML = templateCombined;
 
         document.getElementById('preview-vzwtrade').innerHTML = templateVzwTrade;
         document.getElementById('doc-vzwtrade').innerHTML = templateVzwTrade;
@@ -1004,15 +926,6 @@
 
         document.getElementById('preview-warpcalls').innerHTML = templateWarpCalls;
         document.getElementById('doc-warpcalls').innerHTML = templateWarpCalls;
-
-        document.getElementById('preview-atttradein').innerHTML = templateAttTradeIn;
-        document.getElementById('doc-atttradein').innerHTML = templateAttTradeIn;
-
-        document.getElementById('preview-attpromos').innerHTML = templateAttPromos;
-        document.getElementById('doc-attpromos').innerHTML = templateAttPromos;
-
-        // Initialize preview thumbnail for the PDF test card
-        document.getElementById('preview-attpromos-test').innerHTML = templateAttPromos;
 
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
