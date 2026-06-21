@@ -570,7 +570,6 @@
             
             #login-view, #app-view, #version-text, #warning-modal, #tutorial-modal, #hub-link-stack { display: none !important; }
 
-            body.printing-takehome #doc-takehome { display: block !important; }
             body.printing-intake #doc-intake { display: block !important; }
             body.printing-vzwtrade #doc-vzwtrade { display: block !important; }
             body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
@@ -683,69 +682,56 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- ROW 2: SECONDARY DOCUMENTS (SOFT LOCK) -->
-            <div class="dashboard-row">
-                
-                <div class="category-container secondary-category">
-                    <div class="category-title">Other</div>
-                    <div class="category-box box-gray">
-                        
-                        <!-- Soft Lock Button -->
-                        <div id="unlock-container">
-                            <button id="btn-unlock-guides">show other documents</button>
-                        </div>
-
-                        <!-- Hidden Cards -->
-                        <div id="hidden-guides-container" class="cards-container">
-                            <div class="action-card secondary-card" onclick="printDoc('vzwtrade')">
+                            <div class="action-card locked-card" id="card-vzwtrade" onclick="handleVzwTradeClick()">
                                 <div class="preview-stage" id="preview-vzwtrade"></div>
+                                <div class="lock-overlay" id="lock-vzwtrade">
+                                    <span>show doc</span>
+                                </div>
                                 <div class="card-overlay">
                                     <div class="card-title">Verizon Trade in Guide</div>
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
-                            <div class="action-card secondary-card" onclick="printDoc('iphonetransfer')">
+                            <div class="action-card locked-card" id="card-iphonetransfer" onclick="handleIphoneTransferClick()">
                                 <div class="preview-stage" id="preview-iphonetransfer"></div>
+                                <div class="lock-overlay" id="lock-iphonetransfer">
+                                    <span>show doc</span>
+                                </div>
                                 <div class="card-overlay">
                                     <div class="card-title">iPhone transfer guide</div>
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
-                            <!-- Legacy Line moved to Other -->
-                            <div class="action-card secondary-card" onclick="printDoc('takehome')">
-                                <div class="preview-stage" id="preview-takehome"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">half page cutting line</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
-                                </div>
-                            </div>
                         </div>
+
                     </div>
                 </div>
-
-            </div> <!-- End Row 2 -->
+            </div>
 
         </div>
     </div> <!-- End App View -->
 
-    <!-- WARNING MODAL -->
-    <div id="warning-modal">
+    <!-- HIDDEN PRINT CONTAINERS & MODALS -->
+    <div id="vzw-trade-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
         <div class="modal-content">
-            <p><strong>The Verizon trade in and iPhone transfer guides are unfinished documents and could provide inaccurate/damaging steps or information.</strong> Using these guides isn't advised until the documents have been properly rewritten with accurate information.</p>
+            <p><strong>The Verizon trade-in guide is an unfinished document and could provide inaccurate and damaging steps or information.</strong> Using this guide isn't advised until it's been rewritten with accurate information.</p>
             <div class="modal-buttons">
-                <button class="btn-modal" id="btn-modal-okay">okay</button>
-                <button class="btn-modal" id="btn-modal-show">show unfinished documents anyway</button>
+                <button class="btn-modal" id="btn-vzwtrade-cancel" style="background-color: #e4e6eb; color: #1c1e21;">okay</button>
+                <button class="btn-modal" id="btn-vzwtrade-show" style="background-color: #1877f2; color: white;">I understand the risk and want to print it anyway.</button>
             </div>
         </div>
     </div>
 
-    <!-- HIDDEN PRINT CONTAINERS & MODALS -->
+    <div id="iphone-transfer-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="modal-content">
+            <p><strong>The iPhone transfer guide is an unfinished document and could provide inaccurate and damaging steps or information.</strong> Using this guide isn't advised until it's been rewritten with accurate information.</p>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-iphonetransfer-cancel" style="background-color: #e4e6eb; color: #1c1e21;">okay</button>
+                <button class="btn-modal" id="btn-iphonetransfer-show" style="background-color: #1877f2; color: white;">I understand the risk and want to print it anyway.</button>
+            </div>
+        </div>
+    </div>
+
     <div id="att-promos-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
         <div class="modal-content">
             <p><strong>Heads up:</strong> the ATT flyer has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date promo flyer.</p>
@@ -766,7 +752,6 @@
         </div>
     </div>
 
-    <div id="doc-takehome" class="doc-container"></div>
     <div id="doc-intake" class="doc-container"></div>
     <div id="doc-vzwtrade" class="doc-container"></div>
     <div id="doc-iphonetransfer" class="doc-container"></div>
@@ -818,7 +803,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.35";
+        const APP_VERSION = "v0.36";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -860,61 +845,55 @@
             }
         });
 
-        // --- MODAL LOGIC ---
-        const btnUnlock = document.getElementById('btn-unlock-guides');
-        const modal = document.getElementById('warning-modal');
-        const btnOkay = document.getElementById('btn-modal-okay');
-        const btnShow = document.getElementById('btn-modal-show');
-        const unlockContainer = document.getElementById('unlock-container');
-        const hiddenGuides = document.getElementById('hidden-guides-container');
+        // --- MODAL LOGIC (VZW Trade & iPhone Transfer) ---
+        const vzwTradeCard = document.getElementById('card-vzwtrade');
+        const vzwTradeModal = document.getElementById('vzw-trade-warning-modal');
+        const btnVzwTradeCancel = document.getElementById('btn-vzwtrade-cancel');
+        const btnVzwTradeShow = document.getElementById('btn-vzwtrade-show');
 
-        btnUnlock.addEventListener('click', () => {
-            modal.style.display = 'flex';
+        function handleVzwTradeClick() {
+            if (vzwTradeCard.classList.contains('locked-card')) {
+                vzwTradeModal.style.display = 'flex';
+            } else {
+                printDoc('vzwtrade');
+            }
+        }
+
+        btnVzwTradeCancel.addEventListener('click', () => {
+            vzwTradeModal.style.display = 'none';
         });
 
-        btnOkay.addEventListener('click', () => {
-            modal.style.display = 'none';
+        btnVzwTradeShow.addEventListener('click', () => {
+            vzwTradeModal.style.display = 'none';
+            vzwTradeCard.classList.remove('locked-card');
+            printDoc('vzwtrade');
         });
 
-        btnShow.addEventListener('click', () => {
-            modal.style.display = 'none';
-            unlockContainer.style.display = 'none';
-            hiddenGuides.style.display = 'flex';
+        const iphoneTransferCard = document.getElementById('card-iphonetransfer');
+        const iphoneTransferModal = document.getElementById('iphone-transfer-warning-modal');
+        const btnIphoneTransferCancel = document.getElementById('btn-iphonetransfer-cancel');
+        const btnIphoneTransferShow = document.getElementById('btn-iphonetransfer-show');
+
+        function handleIphoneTransferClick() {
+            if (iphoneTransferCard.classList.contains('locked-card')) {
+                iphoneTransferModal.style.display = 'flex';
+            } else {
+                printDoc('iphonetransfer');
+            }
+        }
+
+        btnIphoneTransferCancel.addEventListener('click', () => {
+            iphoneTransferModal.style.display = 'none';
+        });
+
+        btnIphoneTransferShow.addEventListener('click', () => {
+            iphoneTransferModal.style.display = 'none';
+            iphoneTransferCard.classList.remove('locked-card');
+            printDoc('iphonetransfer');
         });
 
         // --- TEMPLATES ---
         
-        // 1. Line Only Legacy
-        const contentTakeHomeHalf = `
-            <div class="half-sheet">
-                <div class="row">
-                    <div class="line w-lg"></div><span class="label">for</span><span class="label" style="margin-left: 20px;">Your Number:</span>
-                    <div class="line w-sm"></div><span class="symbol">-</span><div class="line w-sm"></div><span class="symbol">-</span><div class="line w-sm"></div>
-                    <span class="label" style="margin-left: 20px;">Your</span><div class="line w-sm"></div><span class="label">PIN:</span><div class="line w-md"></div>
-                </div>
-                <div class="row">
-                    <span class="label">Monthly bill: $</span><div class="line w-sm"></div><span class="symbol">+</span><div class="line w-sm"></div>
-                    <span class="symbol">+</span><div class="line w-sm"></div><span class="symbol">= ~$</span><div class="line w-sm"></div><span class="label">/mo (___yr)</span>
-                </div>
-                <div class="th-alert">⚠ IMPORTANT: BY END OF TOMORROW, Set up auto pay to discount-eligible <div class="line w-lg"></div> and paperless billing to email to keep your bill as low as possible. Do this in the <div class="line w-lg"></div> app or site, or call 611. Note that your app/site password is not the same as your account passcode/pin.</div>
-                <div class="th-carrier"><span class="th-bold">Verizon users:</span> use verizon.com/signin or My Verizon app > Create new account > Mobile (NOT prepaid) > make your user ID identical to the email given at Walmart (ie FakeEmail97@gmail.com) if possible.</div>
-                <div class="th-carrier"><span class="th-bold">AT&T Users:</span> use att.com/my or My AT&T app > "Forgot password" > your user id is usually identical to the email you gave at Walmart (ie FakeEmail97@gmail.com).</div>
-                <div class="th-carrier"><span class="th-bold">T-Mobile Users:</span> use t-mobile.com/signin or T-Life app > Sign up.</div>
-                <div class="gap-md"></div>
-                <div class="th-text-block">ℹ <b>Your first bill is due in ___ days or the date selected for auto pay.</b></div>
-                <div class="th-text-block">ℹ <b>Heads up!</b> Your first bill will be higher than normal, then reimbursed to compensate. You can request to accelerate your discount credits by contacting your carrier directly.</div>
-                <div class="gap-sm"></div>
-                <div class="row" style="display:flex; justify-content: space-between;">
-                    <div>Est. 1st bill = ~$<div class="line w-md"></div></div>
-                    <div>Est. 2nd bill = ~$<div class="line w-md"></div></div>
-                    <div>Est. 3rd bill = ~$<div class="line w-md"></div></div>
-                </div>
-                <div class="gap-lg"></div>
-                <div class="row">Overcharge of ~$<div class="line w-sm"></div> is reimbursed, usually by the end of bill #2 or #3.</div>
-                <div class="row th-carrier">NOTE: The activation fee(s) of $<div class="line w-sm"></div> is <i>not</i> automatically reimbursed.</div>
-            </div>`;
-        const templateTakeHome = `<div class="page"><div class="takehome-grid">${contentTakeHomeHalf}${contentTakeHomeHalf}</div><div class="cut-line-horiz"></div></div>`;
-
         // 2. Intake Sheet
         const contentIntakeQuad = `
             <div class="quadrant">
@@ -989,9 +968,6 @@
         });
 
         // --- INITIALIZATION ---
-        document.getElementById('preview-takehome').innerHTML = templateTakeHome;
-        document.getElementById('doc-takehome').innerHTML = templateTakeHome;
-        
         document.getElementById('preview-intake').innerHTML = templateIntake;
         document.getElementById('doc-intake').innerHTML = templateIntake;
 
