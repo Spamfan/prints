@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prints</title>
+    <meta property="og:title" content="Prints">
+    <meta property="og:description" content="An unofficial resource for Walmart Wireless.">
+    <meta property="og:image" content="https://i.imgur.com/dM6vJwI.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://i.imgur.com/dM6vJwI.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon-192x192.png">
@@ -271,23 +276,7 @@
             position: relative;
         }
 
-        /* --- AT&T LOCK STYLES --- */
-        .locked-card .preview-stage {
-            filter: grayscale(100%) opacity(30%);
-        }
-        .lock-overlay {
-            display: none;
-        }
-        .locked-card .lock-overlay {
-            display: flex;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: calc(100% - 50px);
-            align-items: center; justify-content: center;
-            background: rgba(200, 200, 200, 0.5);
-            z-index: 5;
-            font-weight: bold; font-size: 16px; color: #333;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
+        /* --- AT&T LOCK STYLES (Visual Locks Removed per SP) --- */
 
         /* --- UNFINISHED GUIDES UI (SOFT LOCK) --- */
         #unlock-container {
@@ -623,19 +612,19 @@
     <div id="app-view" style="display: none;">
         <!-- DASHBOARD LAYOUT -->
         <div id="dashboard">
+            <img src="https://i.imgur.com/dM6vJwI.png" alt="Logo" style="max-width: 300px; margin: 0 auto 10px auto; display: block;">
             
             <!-- ROW 1: PRIMARY DOCUMENTS -->
             <div class="dashboard-row">
                 <div class="category-container">
-                    <div class="category-title">Common printouts</div>
-                    <div class="category-box box-blue">
+                    <div class="category-title">Click a document below to print.</div>
+                    <div class="category-box" style="background: transparent; box-shadow: none; padding: 0; min-height: auto;">
                         <div class="cards-container">
                             <div class="card-wrapper">
                                 <div class="action-card" onclick="printDoc('takehomev2')">
                                     <div class="preview-stage" id="preview-takehomev2"></div>
                                     <div class="card-overlay">
                                         <div class="card-title">Take Home Sheet</div>
-                                        <div class="card-desc">Right Click / Tap to Print</div>
                                     </div>
                                 </div>
                                 <button class="tutorial-btn" id="btn-tut-ths2">how to use this sheet</button>
@@ -644,7 +633,6 @@
                                 <div class="preview-stage" id="preview-intake"></div>
                                 <div class="card-overlay">
                                     <div class="card-title">Intake Sheet</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
                             <!-- Guide for WARP Calls moved to Common -->
@@ -652,56 +640,38 @@
                                 <div class="preview-stage" id="preview-warpcalls"></div>
                                 <div class="card-overlay">
                                     <div class="card-title">Guide for WARP calls</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
                             <div class="action-card locked-card" id="card-attpromos" onclick="handleAttPromosClick()">
                                 <div class="preview-stage" id="preview-attpromos"></div>
-                                <div class="lock-overlay" id="lock-attpromos">
-                                    <span>show doc</span>
-                                </div>
                                 <div class="card-overlay">
                                     <div class="card-title">AT&T Promos 06-16-26</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
                             <div class="action-card locked-card" id="card-vzwpromos" onclick="handleVzwPromosClick()">
                                 <div class="preview-stage" id="preview-vzwpromos"></div>
-                                <div class="lock-overlay" id="lock-vzwpromos">
-                                    <span>show doc</span>
-                                </div>
                                 <div class="card-overlay">
                                     <div class="card-title">VZW Promos 6-16-26</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
                             <div class="action-card" onclick="printDoc('vzwflyertest')">
                                 <div class="preview-stage-landscape" id="preview-vzwflyertest"></div>
                                 <div class="card-overlay">
                                     <div class="card-title">[testing only] VZW flyer</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
                             <div class="action-card locked-card" id="card-vzwtrade" onclick="handleVzwTradeClick()">
                                 <div class="preview-stage" id="preview-vzwtrade"></div>
-                                <div class="lock-overlay" id="lock-vzwtrade">
-                                    <span>show doc</span>
-                                </div>
                                 <div class="card-overlay">
                                     <div class="card-title">Verizon Trade in Guide</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
                             <div class="action-card locked-card" id="card-iphonetransfer" onclick="handleIphoneTransferClick()">
                                 <div class="preview-stage" id="preview-iphonetransfer"></div>
-                                <div class="lock-overlay" id="lock-iphonetransfer">
-                                    <span>show doc</span>
-                                </div>
                                 <div class="card-overlay">
                                     <div class="card-title">iPhone transfer guide</div>
-                                    <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
-                            </div>
+                            </div>                   </div>
                         </div>
 
                     </div>
@@ -803,7 +773,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.36";
+        const APP_VERSION = "v0.38";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -1003,7 +973,7 @@
 
         // --- PDF PRINT ENGINE ---
         function printPDF(url) {
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0;
             
             if (isMobile) {
                 // Mobile fallback: Open PDF in a new tab for native handling
