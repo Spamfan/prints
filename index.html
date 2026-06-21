@@ -32,6 +32,26 @@
             min-height: 100vh;
         }
 
+        /* --- BASE LOADER --- */
+        #base-loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1877f2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
         #version-text {
             position: absolute;
             top: 10px;
@@ -195,10 +215,11 @@
         .box-gray { background-color: #e4e6eb; }
 
         .cards-container {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: flex-start;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 250px);
+            gap: 50px 15px;
+            justify-items: center;
+            align-items: end;
             width: 100%;
         }
 
@@ -227,6 +248,11 @@
         .secondary-card {
             width: 150px;
             height: 194px;
+        }
+
+        .action-card.landscape {
+            width: 233px;
+            height: 180px;
         }
 
         .card-overlay {
@@ -262,6 +288,8 @@
             pointer-events: none;
             background: white;
             position: relative;
+            border: 4px solid #dadddf;
+            box-sizing: border-box;
         }
 
         .secondary-card .preview-stage { transform: scale(0.18); }
@@ -269,11 +297,13 @@
         .preview-stage-landscape {
             width: 11in;
             height: 8.5in;
-            transform: scale(0.17); /* Fit to card width */
+            transform: scale(0.22);
             transform-origin: top left;
             pointer-events: none;
             background: white;
             position: relative;
+            border: 4px solid #dadddf;
+            box-sizing: border-box;
         }
 
         /* --- AT&T LOCK STYLES (Visual Locks Removed per SP) --- */
@@ -370,11 +400,14 @@
         /* --- TUTORIAL MODAL & BUTTONS --- */
         .card-wrapper {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            position: relative;
         }
         .tutorial-btn {
+            position: absolute;
+            bottom: -38px;
+            white-space: nowrap;
             background: #ffc107;
             border: none;
             color: #000000;
@@ -588,6 +621,8 @@
 </head>
 <body>
 
+    <div id="base-loader"></div>
+
     <div id="version-text"></div>
 
     <div id="hub-link-stack">
@@ -612,7 +647,7 @@
     <div id="app-view" style="display: none;">
         <!-- DASHBOARD LAYOUT -->
         <div id="dashboard">
-            <img src="https://i.imgur.com/dM6vJwI.png" alt="Logo" style="max-width: 300px; margin: 0 auto 10px auto; display: block;">
+            <img src="https://i.imgur.com/dM6vJwI.png" alt="Logo" style="max-width: 150px; margin: 0 0 15px 0; display: block;">
             
             <!-- ROW 1: PRIMARY DOCUMENTS -->
             <div class="dashboard-row">
@@ -654,7 +689,7 @@
                                     <div class="card-title">VZW Promos 6-16-26</div>
                                 </div>
                             </div>
-                            <div class="action-card" onclick="printDoc('vzwflyertest')">
+                            <div class="action-card landscape" onclick="printDoc('vzwflyertest')">
                                 <div class="preview-stage-landscape" id="preview-vzwflyertest"></div>
                                 <div class="card-overlay">
                                     <div class="card-title">[testing only] VZW flyer</div>
@@ -773,8 +808,14 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.38";
+        const APP_VERSION = "v0.41";
         document.getElementById('version-text').textContent = APP_VERSION;
+
+        // --- LOADER CLEANUP ---
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('base-loader');
+            if (loader) loader.remove();
+        });
 
         // --- GATEKEEPER LOGIC ---
         const LEGACY_PIN = atob('MTAyMDMw'); // "102030"
