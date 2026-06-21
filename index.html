@@ -261,6 +261,16 @@
 
         .secondary-card .preview-stage { transform: scale(0.18); }
 
+        .preview-stage-landscape {
+            width: 11in;
+            height: 8.5in;
+            transform: scale(0.17); /* Fit to card width */
+            transform-origin: top left;
+            pointer-events: none;
+            background: white;
+            position: relative;
+        }
+
         /* --- AT&T LOCK STYLES --- */
         .locked-card .preview-stage {
             filter: grayscale(100%) opacity(30%);
@@ -512,6 +522,16 @@
             z-index: 5;
         }
 
+        .page-landscape {
+            width: 11in;
+            height: 8.5in;
+            background-color: white;
+            overflow: hidden; 
+            position: relative;
+            page-break-after: always;
+            break-after: always;
+        }
+
         /* Core Typography for legacy templates */
         .half-sheet, .quadrant { color: #000 !important; font-size: 10pt !important; font-family: Arial, Helvetica, sans-serif; line-height: 1.4; }
         .row { margin-bottom: 6px; width: 100%; white-space: nowrap; }
@@ -556,6 +576,7 @@
             body.printing-iphonetransfer #doc-iphonetransfer { display: block !important; }
             body.printing-warpcalls #doc-warpcalls { display: block !important; }
             body.printing-takehomev2 #doc-takehomev2 { display: block !important; }
+            body.printing-vzwflyertest #doc-vzwflyertest { display: block !important; }
 
             @page {
                 size: 8.5in 11in;
@@ -655,6 +676,13 @@
                                     <div class="card-desc">Right Click / Tap to Print</div>
                                 </div>
                             </div>
+                            <div class="action-card" onclick="printDoc('vzwflyertest')">
+                                <div class="preview-stage-landscape" id="preview-vzwflyertest"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">[testing only] VZW flyer</div>
+                                    <div class="card-desc">Right Click / Tap to Print</div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -744,6 +772,7 @@
     <div id="doc-iphonetransfer" class="doc-container"></div>
     <div id="doc-warpcalls" class="doc-container"></div>
     <div id="doc-takehomev2" class="doc-container"></div>
+    <div id="doc-vzwflyertest" class="doc-container"></div>
 
     <!-- TUTORIAL MODAL -->
     <div id="tutorial-modal">
@@ -789,7 +818,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.34";
+        const APP_VERSION = "v0.35";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- GATEKEEPER LOGIC ---
@@ -908,6 +937,9 @@
         // 9. Take Home Sheet V2
         const templateTakeHomeV2 = `<div class="page"><img src="https://i.imgur.com/JgUhVaD.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"><div class="cut-line-horiz" style="z-index: 5;"></div></div>`;
 
+        // 10. VZW Flyer Test (Landscape)
+        const templateVzwFlyerTest = `<div class="page-landscape"><img src="https://i.imgur.com/OaElQzU.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div><div class="page-landscape"><img src="https://i.imgur.com/r0XkCbs.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
+
         // --- AT&T PROMOS MODAL LOGIC ---
         const attPromosCard = document.getElementById('card-attpromos');
         const attPromosModal = document.getElementById('att-promos-warning-modal');
@@ -929,6 +961,7 @@
         btnAttPromosShow.addEventListener('click', () => {
             attPromosModal.style.display = 'none';
             attPromosCard.classList.remove('locked-card');
+            printPDF('ATT Promos 06-16-26.pdf');
         });
 
         // --- VZW PROMOS MODAL LOGIC ---
@@ -952,6 +985,7 @@
         btnVzwPromosShow.addEventListener('click', () => {
             vzwPromosModal.style.display = 'none';
             vzwPromosCard.classList.remove('locked-card');
+            printPDF('VZW Promos 6-16-26.pdf');
         });
 
         // --- INITIALIZATION ---
@@ -972,6 +1006,9 @@
 
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
+
+        document.getElementById('preview-vzwflyertest').innerHTML = `<img src="https://i.imgur.com/OaElQzU.png" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;">`;
+        document.getElementById('doc-vzwflyertest').innerHTML = templateVzwFlyerTest;
 
         // Deferred Thumbnail Loading for Snappiness
         setTimeout(() => {
@@ -1023,6 +1060,9 @@
             document.body.classList.remove('multi-page');
             document.documentElement.classList.remove('multi-page');
             
+            const dynamicStyle = document.getElementById('dynamic-page-style');
+            if (dynamicStyle) dynamicStyle.remove();
+
             // Remove listeners to prevent memory leaks and accidental triggers later
             window.removeEventListener('click', cleanupPrint, true);
             window.removeEventListener('touchstart', cleanupPrint, true);
@@ -1036,9 +1076,17 @@
             document.body.classList.add('printing-' + type);
 
             // Multi-page override
-            if (type === 'attpromos') {
+            if (type === 'attpromos' || type === 'vzwflyertest') {
                 document.body.classList.add('multi-page');
                 document.documentElement.classList.add('multi-page');
+            }
+
+            // Landscape override
+            if (type === 'vzwflyertest') {
+                const style = document.createElement('style');
+                style.id = 'dynamic-page-style';
+                style.innerHTML = '@page { size: 11in 8.5in !important; margin: 0; }';
+                document.head.appendChild(style);
             }
             
             // 3. Tiny timeout to ensure DOM updates before calling print dialog
