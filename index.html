@@ -35,7 +35,7 @@
         /* --- BASE LOADER --- */
         #base-loader {
             position: fixed;
-            top: 50%;
+            top: 25vh;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 40px;
@@ -670,29 +670,23 @@
                                     <div class="card-title">Intake Sheet</div>
                                 </div>
                             </div>
+                            <div class="action-card locked-card" id="card-attpromos" onclick="handleAttPromosClick()">
+                                <div class="preview-stage" id="preview-attpromos"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">AT&T Promos 6-19-26</div>
+                                </div>
+                            </div>
+                            <div class="action-card landscape locked-card" id="card-vzwpromos" onclick="handleVzwPromosClick()">
+                                <div class="preview-stage-landscape" id="preview-vzwflyertest"></div>
+                                <div class="card-overlay">
+                                    <div class="card-title">VZW Promos 6-16-26</div>
+                                </div>
+                            </div>
                             <!-- Guide for WARP Calls moved to Common -->
                             <div class="action-card" onclick="printDoc('warpcalls')">
                                 <div class="preview-stage" id="preview-warpcalls"></div>
                                 <div class="card-overlay">
                                     <div class="card-title">Guide for WARP calls</div>
-                                </div>
-                            </div>
-                            <div class="action-card locked-card" id="card-attpromos" onclick="handleAttPromosClick()">
-                                <div class="preview-stage" id="preview-attpromos"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">AT&T Promos 06-16-26</div>
-                                </div>
-                            </div>
-                            <div class="action-card locked-card" id="card-vzwpromos" onclick="handleVzwPromosClick()">
-                                <div class="preview-stage" id="preview-vzwpromos"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">VZW Promos 6-16-26</div>
-                                </div>
-                            </div>
-                            <div class="action-card landscape" onclick="printDoc('vzwflyertest')">
-                                <div class="preview-stage-landscape" id="preview-vzwflyertest"></div>
-                                <div class="card-overlay">
-                                    <div class="card-title">[testing only] VZW flyer</div>
                                 </div>
                             </div>
                             <div class="action-card locked-card" id="card-vzwtrade" onclick="handleVzwTradeClick()">
@@ -808,7 +802,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.41";
+        const APP_VERSION = "v0.43";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- LOADER CLEANUP ---
@@ -940,7 +934,7 @@
             if (attPromosCard.classList.contains('locked-card')) {
                 attPromosModal.style.display = 'flex';
             } else {
-                printPDF('ATT Promos 06-16-26.pdf');
+                printPDF('ATT Promos 6-19-26.pdf');
             }
         }
 
@@ -951,7 +945,7 @@
         btnAttPromosShow.addEventListener('click', () => {
             attPromosModal.style.display = 'none';
             attPromosCard.classList.remove('locked-card');
-            printPDF('ATT Promos 06-16-26.pdf');
+            printPDF('ATT Promos 6-19-26.pdf');
         });
 
         // --- VZW PROMOS MODAL LOGIC ---
@@ -964,7 +958,7 @@
             if (vzwPromosCard.classList.contains('locked-card')) {
                 vzwPromosModal.style.display = 'flex';
             } else {
-                printPDF('VZW Promos 6-16-26.pdf');
+                printDoc('vzwflyertest');
             }
         }
 
@@ -975,7 +969,7 @@
         btnVzwPromosShow.addEventListener('click', () => {
             vzwPromosModal.style.display = 'none';
             vzwPromosCard.classList.remove('locked-card');
-            printPDF('VZW Promos 6-16-26.pdf');
+            printDoc('vzwflyertest');
         });
 
         // --- INITIALIZATION ---
@@ -999,16 +993,10 @@
 
         // Deferred Thumbnail Loading for Snappiness
         setTimeout(() => {
-            const templateAttPromosThumb = `<iframe src="ATT Promos 06-16-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
+            const templateAttPromosThumb = `<iframe src="ATT Promos 6-19-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
             const previewElement = document.getElementById('preview-attpromos');
             if (previewElement) {
                 previewElement.innerHTML = templateAttPromosThumb;
-            }
-
-            const templateVzwPromosThumb = `<iframe src="VZW Promos 6-16-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
-            const previewElementVzw = document.getElementById('preview-vzwpromos');
-            if (previewElementVzw) {
-                previewElementVzw.innerHTML = templateVzwPromosThumb;
             }
         }, 800);
 
