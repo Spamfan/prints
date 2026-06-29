@@ -673,7 +673,7 @@
                             <div class="action-card locked-card" id="card-attpromos" onclick="handleAttPromosClick()">
                                 <div class="preview-stage" id="preview-attpromos"></div>
                                 <div class="card-overlay">
-                                    <div class="card-title">AT&T Promos 6-19-26</div>
+                                    <div class="card-title">AT&T Promos 6-26-26</div>
                                 </div>
                             </div>
                             <div class="action-card landscape locked-card" id="card-vzwpromos" onclick="handleVzwPromosClick()">
@@ -802,7 +802,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.43";
+        const APP_VERSION = "v0.44";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- LOADER CLEANUP ---
@@ -934,7 +934,7 @@
             if (attPromosCard.classList.contains('locked-card')) {
                 attPromosModal.style.display = 'flex';
             } else {
-                printPDF('ATT Promos 6-19-26.pdf');
+                printPDF('ATT Promos 6-26-26.pdf');
             }
         }
 
@@ -945,7 +945,7 @@
         btnAttPromosShow.addEventListener('click', () => {
             attPromosModal.style.display = 'none';
             attPromosCard.classList.remove('locked-card');
-            printPDF('ATT Promos 6-19-26.pdf');
+            printPDF('ATT Promos 6-26-26.pdf');
         });
 
         // --- VZW PROMOS MODAL LOGIC ---
@@ -993,7 +993,7 @@
 
         // Deferred Thumbnail Loading for Snappiness
         setTimeout(() => {
-            const templateAttPromosThumb = `<iframe src="ATT Promos 6-19-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
+            const templateAttPromosThumb = `<iframe src="ATT Promos 6-26-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
             const previewElement = document.getElementById('preview-attpromos');
             if (previewElement) {
                 previewElement.innerHTML = templateAttPromosThumb;
