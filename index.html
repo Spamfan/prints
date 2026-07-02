@@ -802,12 +802,19 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.45";
+        const APP_VERSION = "version 0.4.6";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- DYNAMIC DATES ---
         const ATT_PROMO_DATE = "6-26-26";
         const VZW_PROMO_DATE = "7-1-26";
+        const VZW_PROMO_IMAGES = [
+            "https://i.imgur.com/QgwMSYv.png",
+            "https://i.imgur.com/xvUvYlx.png",
+            "https://i.imgur.com/soYN9xQ.png",
+            "https://i.imgur.com/43AMDtj.png",
+            "https://i.imgur.com/9HrBH4W.png"
+        ];
 
         // --- LOADER CLEANUP ---
         window.addEventListener('load', () => {
@@ -925,9 +932,6 @@
         // 9. Take Home Sheet V2
         const templateTakeHomeV2 = `<div class="page"><img src="https://i.imgur.com/JgUhVaD.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"><div class="cut-line-horiz" style="z-index: 5;"></div></div>`;
 
-        // 10. VZW Flyer Test (Landscape)
-        const templateVzwFlyerTest = `<div class="page-landscape"><img src="https://i.imgur.com/OaElQzU.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div><div class="page-landscape"><img src="https://i.imgur.com/r0XkCbs.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`;
-
         // --- AT&T PROMOS MODAL LOGIC ---
         const attPromosCard = document.getElementById('card-attpromos');
         const attPromosModal = document.getElementById('att-promos-warning-modal');
@@ -962,7 +966,7 @@
             if (vzwPromosCard.classList.contains('locked-card')) {
                 vzwPromosModal.style.display = 'flex';
             } else {
-                printPDF(`VZW Promos ${VZW_PROMO_DATE}.pdf`);
+                printDoc('vzwflyertest');
             }
         }
 
@@ -973,7 +977,7 @@
         btnVzwPromosShow.addEventListener('click', () => {
             vzwPromosModal.style.display = 'none';
             vzwPromosCard.classList.remove('locked-card');
-            printPDF(`VZW Promos ${VZW_PROMO_DATE}.pdf`);
+            printDoc('vzwflyertest');
         });
 
         // --- INITIALIZATION ---
@@ -996,7 +1000,10 @@
         document.getElementById('title-attpromos').textContent = `AT&T Promos ${ATT_PROMO_DATE}`;
         document.getElementById('title-vzwpromos').textContent = `VZW Promos ${VZW_PROMO_DATE}`;
 
-        document.getElementById('doc-vzwflyertest').innerHTML = templateVzwFlyerTest;
+        // Dynamically build the VZW document HTML using the image array
+        document.getElementById('doc-vzwflyertest').innerHTML = VZW_PROMO_IMAGES.map(url => 
+            `<div class="page-landscape"><img src="${url}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"></div>`
+        ).join('');
 
         // Deferred Thumbnail Loading for Snappiness
         setTimeout(() => {
@@ -1006,7 +1013,7 @@
                 previewAttElement.innerHTML = templateAttPromosThumb;
             }
             
-            const templateVzwPromosThumb = `<iframe src="VZW Promos ${VZW_PROMO_DATE}.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
+            const templateVzwPromosThumb = `<img src="${VZW_PROMO_IMAGES[0]}" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 1;">`;
             const previewVzwElement = document.getElementById('preview-vzwpromos');
             if (previewVzwElement) {
                 previewVzwElement.innerHTML = templateVzwPromosThumb;
