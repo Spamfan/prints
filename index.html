@@ -673,13 +673,13 @@
                             <div class="action-card locked-card" id="card-attpromos" onclick="handleAttPromosClick()">
                                 <div class="preview-stage" id="preview-attpromos"></div>
                                 <div class="card-overlay">
-                                    <div class="card-title">AT&T Promos 6-26-26</div>
+                                    <div class="card-title" id="title-attpromos">AT&T Promos</div>
                                 </div>
                             </div>
                             <div class="action-card landscape locked-card" id="card-vzwpromos" onclick="handleVzwPromosClick()">
-                                <div class="preview-stage-landscape" id="preview-vzwflyertest"></div>
+                                <div class="preview-stage-landscape" id="preview-vzwpromos"></div>
                                 <div class="card-overlay">
-                                    <div class="card-title">VZW Promos 6-16-26</div>
+                                    <div class="card-title" id="title-vzwpromos">VZW Promos</div>
                                 </div>
                             </div>
                             <!-- Guide for WARP Calls moved to Common -->
@@ -802,8 +802,12 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.44";
+        const APP_VERSION = "v0.45";
         document.getElementById('version-text').textContent = APP_VERSION;
+
+        // --- DYNAMIC DATES ---
+        const ATT_PROMO_DATE = "6-26-26";
+        const VZW_PROMO_DATE = "7-1-26";
 
         // --- LOADER CLEANUP ---
         window.addEventListener('load', () => {
@@ -934,7 +938,7 @@
             if (attPromosCard.classList.contains('locked-card')) {
                 attPromosModal.style.display = 'flex';
             } else {
-                printPDF('ATT Promos 6-26-26.pdf');
+                printPDF(`ATT Promos ${ATT_PROMO_DATE}.pdf`);
             }
         }
 
@@ -945,7 +949,7 @@
         btnAttPromosShow.addEventListener('click', () => {
             attPromosModal.style.display = 'none';
             attPromosCard.classList.remove('locked-card');
-            printPDF('ATT Promos 6-26-26.pdf');
+            printPDF(`ATT Promos ${ATT_PROMO_DATE}.pdf`);
         });
 
         // --- VZW PROMOS MODAL LOGIC ---
@@ -958,7 +962,7 @@
             if (vzwPromosCard.classList.contains('locked-card')) {
                 vzwPromosModal.style.display = 'flex';
             } else {
-                printDoc('vzwflyertest');
+                printPDF(`VZW Promos ${VZW_PROMO_DATE}.pdf`);
             }
         }
 
@@ -969,7 +973,7 @@
         btnVzwPromosShow.addEventListener('click', () => {
             vzwPromosModal.style.display = 'none';
             vzwPromosCard.classList.remove('locked-card');
-            printDoc('vzwflyertest');
+            printPDF(`VZW Promos ${VZW_PROMO_DATE}.pdf`);
         });
 
         // --- INITIALIZATION ---
@@ -988,15 +992,24 @@
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
 
-        document.getElementById('preview-vzwflyertest').innerHTML = `<img src="https://i.imgur.com/OaElQzU.png" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;">`;
+        // Inject Dynamic Titles
+        document.getElementById('title-attpromos').textContent = `AT&T Promos ${ATT_PROMO_DATE}`;
+        document.getElementById('title-vzwpromos').textContent = `VZW Promos ${VZW_PROMO_DATE}`;
+
         document.getElementById('doc-vzwflyertest').innerHTML = templateVzwFlyerTest;
 
         // Deferred Thumbnail Loading for Snappiness
         setTimeout(() => {
-            const templateAttPromosThumb = `<iframe src="ATT Promos 6-26-26.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
-            const previewElement = document.getElementById('preview-attpromos');
-            if (previewElement) {
-                previewElement.innerHTML = templateAttPromosThumb;
+            const templateAttPromosThumb = `<iframe src="ATT Promos ${ATT_PROMO_DATE}.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
+            const previewAttElement = document.getElementById('preview-attpromos');
+            if (previewAttElement) {
+                previewAttElement.innerHTML = templateAttPromosThumb;
+            }
+            
+            const templateVzwPromosThumb = `<iframe src="VZW Promos ${VZW_PROMO_DATE}.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; border: none; overflow: hidden; pointer-events: none;" tabindex="-1"></iframe>`;
+            const previewVzwElement = document.getElementById('preview-vzwpromos');
+            if (previewVzwElement) {
+                previewVzwElement.innerHTML = templateVzwPromosThumb;
             }
         }, 800);
 
