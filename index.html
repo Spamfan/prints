@@ -870,7 +870,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.5.4";
+        const APP_VERSION = "v0.5.5";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- DYNAMIC DATES ---
@@ -1014,15 +1014,19 @@
             }
         }
 
-        btnAttPromosCancel.addEventListener('click', () => {
-            attPromosModal.style.display = 'none';
-        });
+        if (btnAttPromosCancel) {
+            btnAttPromosCancel.addEventListener('click', () => {
+                attPromosModal.style.display = 'none';
+            });
+        }
 
-        btnAttPromosShow.addEventListener('click', () => {
-            attPromosModal.style.display = 'none';
-            attPromosCard.classList.remove('locked-card');
-            printPDF(`ATT Promos ${ATT_PROMO_DATE}.pdf`);
-        });
+        if (btnAttPromosShow) {
+            btnAttPromosShow.addEventListener('click', () => {
+                attPromosModal.style.display = 'none';
+                attPromosCard.classList.remove('locked-card');
+                printPDF(`ATT Promos ${ATT_PROMO_DATE}.pdf`);
+            });
+        }
 
         // Temporary AT&T Promos Logic
         const btnAttPromosTempOkay = document.getElementById('btn-attpromos-temp-okay');
