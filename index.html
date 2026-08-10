@@ -777,10 +777,16 @@
 
     <div id="att-promos-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
         <div class="modal-content">
+            <!-- TEMPORARILY DISABLED
             <p><strong>Heads up:</strong> the ATT flyer has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date promo flyer.</p>
             <div class="modal-buttons">
                 <button class="btn-modal" id="btn-attpromos-cancel" style="background-color: #e4e6eb; color: #1c1e21;">cancel</button>
                 <button class="btn-modal" id="btn-attpromos-show" style="background-color: #1877f2; color: white;">I checked the date, show me the document</button>
+            </div>
+            -->
+            <p><strong>Sorry!</strong> The AT&T Promotion Highlights won't be shown here for a bit as the site is reorganized. Please check AT&T Knowledge Plus (recommended) or Connect on Teams for the latest updates.</p>
+            <div class="modal-buttons" style="justify-content: flex-end;">
+                <button class="btn-modal" id="btn-attpromos-temp-okay" style="background-color: #1877f2; color: white;">Okay</button>
             </div>
         </div>
     </div>
@@ -864,7 +870,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.5.3";
+        const APP_VERSION = "v0.5.4";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- DYNAMIC DATES ---
@@ -1018,6 +1024,14 @@
             printPDF(`ATT Promos ${ATT_PROMO_DATE}.pdf`);
         });
 
+        // Temporary AT&T Promos Logic
+        const btnAttPromosTempOkay = document.getElementById('btn-attpromos-temp-okay');
+        if (btnAttPromosTempOkay) {
+            btnAttPromosTempOkay.addEventListener('click', () => {
+                attPromosModal.style.display = 'none';
+            });
+        }
+
         // --- VZW PROMOS MODAL LOGIC ---
         const vzwPromosCard = document.getElementById('card-vzwpromos');
         const vzwPromosModal = document.getElementById('vzw-promos-warning-modal');
@@ -1059,7 +1073,8 @@
         document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
 
         // Inject Dynamic Titles
-        document.getElementById('title-attpromos').textContent = `AT&T Promos ${ATT_PROMO_DATE}`;
+        // document.getElementById('title-attpromos').textContent = `AT&T Promos ${ATT_PROMO_DATE}`;
+        document.getElementById('title-attpromos').textContent = '(AT&T Promos temporarily unavailable)';
         document.getElementById('title-vzwpromos').textContent = `VZW Promos ${VZW_PROMO_DATE}`;
 
         // Dynamically build the VZW document HTML using the image array
@@ -1216,6 +1231,12 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && document.activeElement && document.activeElement.classList.contains('action-card')) {
                 document.activeElement.click();
+            }
+            if (e.key === 'Escape') {
+                const attPromosModal = document.getElementById('att-promos-warning-modal');
+                if (attPromosModal && attPromosModal.style.display === 'flex') {
+                    attPromosModal.style.display = 'none';
+                }
             }
         });
 
