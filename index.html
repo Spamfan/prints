@@ -280,6 +280,35 @@
             height: 180px;
         }
 
+        .info-card {
+            width: 180px;
+            height: 233px;
+            background-color: #e4e6eb;
+            border: 2px solid #dadddf;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+            color: #1c1e21;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .info-card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .info-card-desc {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #1c1e21;
+        }
+
         .card-overlay {
             position: absolute;
             bottom: 0;
@@ -730,17 +759,21 @@
                                     <div class="card-title">Intake Sheet</div>
                                 </div>
                             </div>
-                            <div class="action-card locked-card" tabindex="0" id="card-attpromos" onclick="handleAttPromosClick()">
+                            <div class="action-card locked-card" tabindex="0" id="card-attpromos" onclick="handleAttPromosClick()" style="display: none;">
                                 <div class="preview-stage" id="preview-attpromos"></div>
                                 <div class="card-overlay">
                                     <div class="card-title" id="title-attpromos">AT&T Promos</div>
                                 </div>
                             </div>
-                            <div class="action-card landscape locked-card" tabindex="0" id="card-vzwpromos" onclick="handleVzwPromosClick()">
+                            <div class="action-card landscape locked-card" tabindex="0" id="card-vzwpromos" onclick="handleVzwPromosClick()" style="display: none;">
                                 <div class="preview-stage-landscape" id="preview-vzwpromos"></div>
                                 <div class="card-overlay">
                                     <div class="card-title" id="title-vzwpromos">VZW Promos</div>
                                 </div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-title">Promo highlights unavailable.</div>
+                                <div class="info-card-desc">Promotion highlights for all carriers won't be posted here as the site is reorganized. Please check the latest updates on AT&T knowledge plus or Connect.</div>
                             </div>
                             <!-- Guide for WARP Calls moved to Common -->
                             <div class="action-card" tabindex="0" onclick="printDoc('warpcalls')">
@@ -893,7 +926,7 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.5.6";
+        const APP_VERSION = "v0.5.7";
         document.getElementById('version-text').textContent = APP_VERSION;
 
         // --- FOCUS TRAP ENGINE ---
@@ -1041,6 +1074,10 @@
             printDoc('vzwtrade');
         });
 
+        vzwTradeModal.addEventListener('click', (e) => {
+            if (e.target === vzwTradeModal) btnVzwTradeCancel.click();
+        });
+
         const iphoneTransferCard = document.getElementById('card-iphonetransfer');
         const iphoneTransferModal = document.getElementById('iphone-transfer-warning-modal');
         const btnIphoneTransferCancel = document.getElementById('btn-iphonetransfer-cancel');
@@ -1066,6 +1103,10 @@
             cleanupFocusTrap();
             iphoneTransferCard.classList.remove('locked-card');
             printDoc('iphonetransfer');
+        });
+
+        iphoneTransferModal.addEventListener('click', (e) => {
+            if (e.target === iphoneTransferModal) btnIphoneTransferCancel.click();
         });
 
         // --- TEMPLATES ---
@@ -1336,10 +1377,18 @@
                 document.activeElement.click();
             }
             if (e.key === 'Escape') {
-                const attPromosModal = document.getElementById('att-promos-warning-modal');
-                if (attPromosModal && attPromosModal.style.display === 'flex') {
-                    attPromosModal.style.display = 'none';
+                if (termsModal && termsModal.style.display === 'flex') closeTermsModal();
+                else if (vzwTradeModal && vzwTradeModal.style.display === 'flex') btnVzwTradeCancel.click();
+                else if (iphoneTransferModal && iphoneTransferModal.style.display === 'flex') btnIphoneTransferCancel.click();
+                else if (attPromosModal && attPromosModal.style.display === 'flex') {
+                    if (btnAttPromosTempOkay) btnAttPromosTempOkay.click();
+                    else if (btnAttPromosCancel) btnAttPromosCancel.click();
                 }
+                else if (vzwPromosModal && vzwPromosModal.style.display === 'flex') {
+                    if (btnVzwPromosTempOkay) btnVzwPromosTempOkay.click();
+                }
+                else if (pdfViewerModal && pdfViewerModal.style.display === 'flex') closePdfViewer();
+                else if (tutModal && tutModal.style.display === 'flex') closeTutModal();
             }
         });
 
