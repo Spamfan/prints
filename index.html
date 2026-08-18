@@ -144,6 +144,21 @@
 
         #btn-enter:hover { background-color: #166fe5; }
 
+        #btn-terms {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: transparent;
+            color: #606770;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #btn-terms:hover { background-color: #f0f2f5; color: #1c1e21; border-color: #ccc; }
+
         #pin-error {
             color: #d93025;
             margin-top: 15px;
@@ -684,6 +699,7 @@
         </p>
         <input type="tel" id="pin-input" placeholder="Enter PIN" style="-webkit-text-security: disc;" autofocus>
         <button id="btn-enter">Enter</button>
+        <button id="btn-terms">Terms of Use</button>
         <p id="pin-error">Incorrect PIN</p>
     </div>
 
@@ -700,7 +716,7 @@
                     <div class="category-box" style="background: transparent; box-shadow: none; padding: 0; min-height: auto;">
                         <div class="cards-container">
                             <div class="card-wrapper">
-                                <div class="action-card" tabindex="0" onclick="printDoc('takehomev2')">
+                                <div class="action-card" tabindex="0" onclick="printPDF('ths3.pdf')">
                                     <div class="preview-stage" id="preview-takehomev2"></div>
                                     <div class="card-overlay">
                                         <div class="card-title">Take Home Sheet</div>
@@ -793,10 +809,18 @@
 
     <div id="vzw-promos-warning-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
         <div class="modal-content">
-            <p><strong>Heads up:</strong> the Verizon flyer has its upload date posted to its title and could be out of date. Please only continue if it's the most up to date promo flyer.</p>
-            <div class="modal-buttons">
-                <button class="btn-modal" id="btn-vzwpromos-cancel" style="background-color: #e4e6eb; color: #1c1e21;">cancel</button>
-                <button class="btn-modal" id="btn-vzwpromos-show" style="background-color: #1877f2; color: white;">I checked the date, show me the document</button>
+            <p><strong>Sorry!</strong> The Verizon Promotion Highlights won't be shown here for a bit as the site is reorganized. Please check Connect on Teams for the latest updates.</p>
+            <div class="modal-buttons" style="justify-content: flex-end;">
+                <button class="btn-modal" id="btn-vzwpromos-temp-okay" style="background-color: #1877f2; color: white;">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="terms-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="modal-content">
+            <p>Terms of use hasn't been made yet.</p>
+            <div class="modal-buttons" style="justify-content: flex-end;">
+                <button class="btn-modal" id="btn-terms-okay" style="background-color: #1877f2; color: white;">Okay</button>
             </div>
         </div>
     </div>
@@ -816,7 +840,6 @@
     <div id="doc-vzwtrade" class="doc-container"></div>
     <div id="doc-iphonetransfer" class="doc-container"></div>
     <div id="doc-warpcalls" class="doc-container"></div>
-    <div id="doc-takehomev2" class="doc-container"></div>
     <div id="doc-vzwflyertest" class="doc-container"></div>
 
     <!-- TUTORIAL MODAL -->
@@ -870,8 +893,48 @@
 
     <script>
         // --- VERSIONING ---
-        const APP_VERSION = "v0.5.5";
+        const APP_VERSION = "v0.5.6";
         document.getElementById('version-text').textContent = APP_VERSION;
+
+        // --- FOCUS TRAP ENGINE ---
+        let activeFocusTrap = null;
+        function trapFocus(modal) {
+            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusableElements.length === 0) return;
+            
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            
+            firstElement.focus();
+            
+            const handleKeyDown = function(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstElement) {
+                            e.preventDefault();
+                            lastElement.focus();
+                        }
+                    } else {
+                        if (document.activeElement === lastElement) {
+                            e.preventDefault();
+                            firstElement.focus();
+                        }
+                    }
+                }
+            };
+            
+            modal.addEventListener('keydown', handleKeyDown);
+            activeFocusTrap = function() {
+                modal.removeEventListener('keydown', handleKeyDown);
+            };
+        }
+        
+        function cleanupFocusTrap() {
+            if (activeFocusTrap) {
+                activeFocusTrap();
+                activeFocusTrap = null;
+            }
+        }
 
         // --- DYNAMIC DATES ---
         const ATT_PROMO_DATE = "8-7-26";
@@ -929,6 +992,27 @@
             }
         });
 
+        // --- TERMS MODAL LOGIC ---
+        const btnTerms = document.getElementById('btn-terms');
+        const termsModal = document.getElementById('terms-modal');
+        const btnTermsOkay = document.getElementById('btn-terms-okay');
+
+        btnTerms.addEventListener('click', () => {
+            termsModal.style.display = 'flex';
+            trapFocus(termsModal);
+        });
+
+        const closeTermsModal = () => {
+            termsModal.style.display = 'none';
+            cleanupFocusTrap();
+            btnTerms.focus();
+        };
+
+        btnTermsOkay.addEventListener('click', closeTermsModal);
+        termsModal.addEventListener('click', (e) => {
+            if (e.target === termsModal) closeTermsModal();
+        });
+
         // --- MODAL LOGIC (VZW Trade & iPhone Transfer) ---
         const vzwTradeCard = document.getElementById('card-vzwtrade');
         const vzwTradeModal = document.getElementById('vzw-trade-warning-modal');
@@ -938,6 +1022,7 @@
         function handleVzwTradeClick() {
             if (vzwTradeCard.classList.contains('locked-card')) {
                 vzwTradeModal.style.display = 'flex';
+                trapFocus(vzwTradeModal);
             } else {
                 printDoc('vzwtrade');
             }
@@ -945,10 +1030,13 @@
 
         btnVzwTradeCancel.addEventListener('click', () => {
             vzwTradeModal.style.display = 'none';
+            cleanupFocusTrap();
+            vzwTradeCard.focus();
         });
 
         btnVzwTradeShow.addEventListener('click', () => {
             vzwTradeModal.style.display = 'none';
+            cleanupFocusTrap();
             vzwTradeCard.classList.remove('locked-card');
             printDoc('vzwtrade');
         });
@@ -961,6 +1049,7 @@
         function handleIphoneTransferClick() {
             if (iphoneTransferCard.classList.contains('locked-card')) {
                 iphoneTransferModal.style.display = 'flex';
+                trapFocus(iphoneTransferModal);
             } else {
                 printDoc('iphonetransfer');
             }
@@ -968,10 +1057,13 @@
 
         btnIphoneTransferCancel.addEventListener('click', () => {
             iphoneTransferModal.style.display = 'none';
+            cleanupFocusTrap();
+            iphoneTransferCard.focus();
         });
 
         btnIphoneTransferShow.addEventListener('click', () => {
             iphoneTransferModal.style.display = 'none';
+            cleanupFocusTrap();
             iphoneTransferCard.classList.remove('locked-card');
             printDoc('iphonetransfer');
         });
@@ -1009,6 +1101,7 @@
         function handleAttPromosClick() {
             if (attPromosCard.classList.contains('locked-card')) {
                 attPromosModal.style.display = 'flex';
+                trapFocus(attPromosModal);
             } else {
                 printPDF(`ATT Promos ${ATT_PROMO_DATE}.pdf`);
             }
@@ -1017,12 +1110,15 @@
         if (btnAttPromosCancel) {
             btnAttPromosCancel.addEventListener('click', () => {
                 attPromosModal.style.display = 'none';
+                cleanupFocusTrap();
+                attPromosCard.focus();
             });
         }
 
         if (btnAttPromosShow) {
             btnAttPromosShow.addEventListener('click', () => {
                 attPromosModal.style.display = 'none';
+                cleanupFocusTrap();
                 attPromosCard.classList.remove('locked-card');
                 printPDF(`ATT Promos ${ATT_PROMO_DATE}.pdf`);
             });
@@ -1033,32 +1129,28 @@
         if (btnAttPromosTempOkay) {
             btnAttPromosTempOkay.addEventListener('click', () => {
                 attPromosModal.style.display = 'none';
+                cleanupFocusTrap();
+                attPromosCard.focus();
             });
         }
 
         // --- VZW PROMOS MODAL LOGIC ---
         const vzwPromosCard = document.getElementById('card-vzwpromos');
         const vzwPromosModal = document.getElementById('vzw-promos-warning-modal');
-        const btnVzwPromosCancel = document.getElementById('btn-vzwpromos-cancel');
-        const btnVzwPromosShow = document.getElementById('btn-vzwpromos-show');
+        const btnVzwPromosTempOkay = document.getElementById('btn-vzwpromos-temp-okay');
 
         function handleVzwPromosClick() {
-            if (vzwPromosCard.classList.contains('locked-card')) {
-                vzwPromosModal.style.display = 'flex';
-            } else {
-                printDoc('vzwflyertest');
-            }
+            vzwPromosModal.style.display = 'flex';
+            trapFocus(vzwPromosModal);
         }
 
-        btnVzwPromosCancel.addEventListener('click', () => {
-            vzwPromosModal.style.display = 'none';
-        });
-
-        btnVzwPromosShow.addEventListener('click', () => {
-            vzwPromosModal.style.display = 'none';
-            vzwPromosCard.classList.remove('locked-card');
-            printDoc('vzwflyertest');
-        });
+        if (btnVzwPromosTempOkay) {
+            btnVzwPromosTempOkay.addEventListener('click', () => {
+                vzwPromosModal.style.display = 'none';
+                cleanupFocusTrap();
+                vzwPromosCard.focus();
+            });
+        }
 
         // --- INITIALIZATION ---
         document.getElementById('preview-intake').innerHTML = templateIntake;
@@ -1074,12 +1166,12 @@
         document.getElementById('doc-warpcalls').innerHTML = templateWarpCalls;
 
         document.getElementById('preview-takehomev2').innerHTML = templateTakeHomeV2;
-        document.getElementById('doc-takehomev2').innerHTML = templateTakeHomeV2;
 
         // Inject Dynamic Titles
         // document.getElementById('title-attpromos').textContent = `AT&T Promos ${ATT_PROMO_DATE}`;
         document.getElementById('title-attpromos').textContent = '(AT&T Promos temporarily unavailable)';
-        document.getElementById('title-vzwpromos').textContent = `VZW Promos ${VZW_PROMO_DATE}`;
+        // document.getElementById('title-vzwpromos').textContent = `VZW Promos ${VZW_PROMO_DATE}`;
+        document.getElementById('title-vzwpromos').textContent = '(VZW Promos temporarily unavailable)';
 
         // Dynamically build the VZW document HTML using the image array
         document.getElementById('doc-vzwflyertest').innerHTML = VZW_PROMO_IMAGES.map(url => 
@@ -1108,6 +1200,7 @@
 
         function closePdfViewer() {
             pdfViewerModal.style.display = 'none';
+            cleanupFocusTrap();
             pdfVisibleIframe.src = ''; // Clear memory and reset password prompt state
         }
 
@@ -1127,6 +1220,7 @@
                 // Desktop/WMPC: Show visible iframe modal to handle password prompts
                 pdfVisibleIframe.src = url;
                 pdfViewerModal.style.display = 'flex';
+                trapFocus(pdfViewerModal);
             }
         }
 
@@ -1195,11 +1289,16 @@
             tmo: 'https://i.imgur.com/5DQ22AB.png'
         };
 
-        const closeTutModal = () => { tutModal.style.display = 'none'; };
+        const closeTutModal = () => { 
+            tutModal.style.display = 'none'; 
+            cleanupFocusTrap();
+            if (btnOpenTut) btnOpenTut.focus();
+        };
 
         if (btnOpenTut) {
             btnOpenTut.addEventListener('click', () => {
                 tutModal.style.display = 'flex';
+                trapFocus(tutModal);
                 // Reset to ATT on open
                 tutTabs.forEach(t => t.classList.remove('active'));
                 document.querySelector('.tab-btn[data-carrier="att"]').classList.add('active');
